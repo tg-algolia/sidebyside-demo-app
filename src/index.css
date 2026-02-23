@@ -1,0 +1,1214 @@
+/* ================================================================
+   Algolia Side-by-Side Search — Global Styles
+   Brand: https://www.algolia.com/brand-guidelines
+   ================================================================ */
+
+/* ── Design Tokens ────────────────────────────────────────────── */
+:root {
+  /* Algolia core palette */
+  --algolia-blue:        #5468FF;
+  --algolia-blue-hover:  #3D52E6;
+  --algolia-blue-light:  #EEF0FF;
+  --algolia-blue-muted:  rgba(84, 104, 255, 0.12);
+
+  --algolia-dark:        #21243D;
+  --algolia-dark-2:      #2C2F5B;
+
+  --algolia-text:        #333752;
+  --algolia-text-muted:  #7C858E;
+  --algolia-text-light:  #AAAABB;
+
+  --algolia-bg:          #F5F5FA;
+  --algolia-white:       #FFFFFF;
+  --algolia-border:      #EBECF3;
+  --algolia-border-dark: #D5D6E0;
+
+  /* Semantic */
+  --algolia-green:       #0FAE96;
+  --algolia-green-light: #E5F7F4;
+  --algolia-neural:      #7857FF;
+  --algolia-neural-light:#F0ECFF;
+
+  /* Shadows */
+  --shadow-xs:  0 1px 2px rgba(33, 36, 61, 0.06);
+  --shadow-sm:  0 1px 4px rgba(33, 36, 61, 0.10);
+  --shadow-md:  0 4px 12px rgba(33, 36, 61, 0.12);
+  --shadow-lg:  0 8px 24px rgba(33, 36, 61, 0.16);
+  --shadow-xl:  0 16px 48px rgba(33, 36, 61, 0.22);
+
+  /* Radii */
+  --r-sm:  6px;
+  --r-md:  10px;
+  --r-lg:  16px;
+  --r-xl:  24px;
+  --r-full: 9999px;
+
+  /* Layout */
+  --header-h: 60px;
+  --panel-w:  440px;
+  --max-w:    1800px;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--algolia-bg);
+  color: var(--algolia-text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+
+/* ── Application Shell ──────────────────────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.app-header {
+  height: var(--header-h);
+  background: var(--algolia-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.algolia-logo { flex-shrink: 0; }
+
+.header-title h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.header-subtitle {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 1px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.config-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-md);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.config-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.38);
+  color: #fff;
+}
+
+.config-btn--alert {
+  border-color: var(--algolia-blue);
+  color: var(--algolia-blue);
+  animation: btn-pulse 2.4s ease-in-out infinite;
+}
+
+.config-btn-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--algolia-blue);
+  border: 2px solid var(--algolia-dark);
+}
+
+@keyframes btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(84,104,255,0.5); }
+  50%       { box-shadow: 0 0 0 8px rgba(84,104,255,0); }
+}
+
+/* ── Search Bar ──────────────────────────────────────────────────── */
+.search-bar-container {
+  margin-bottom: 20px;
+}
+
+.search-bar-inner {
+  position: relative;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--algolia-text-muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 50px 0 50px;
+  border: 2px solid var(--algolia-border);
+  border-radius: var(--r-full);
+  background: var(--algolia-white);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--algolia-text);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-input::placeholder { color: var(--algolia-text-light); }
+
+.search-input:focus {
+  border-color: var(--algolia-blue);
+  box-shadow: 0 0 0 4px var(--algolia-blue-muted), var(--shadow-sm);
+}
+
+/* Hide browser default clear button */
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+
+.search-clear {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--algolia-border);
+  color: var(--algolia-text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.search-clear:hover {
+  background: var(--algolia-blue);
+  color: #fff;
+}
+
+/* ── Comparison Layout ──────────────────────────────────────────── */
+.comparison-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── Search Column ──────────────────────────────────────────────── */
+.search-column {
+  background: var(--algolia-white);
+  border: 1px solid var(--algolia-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+}
+
+.column-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--algolia-border);
+  background: var(--algolia-white);
+  top: var(--header-h);
+  z-index: 10;
+}
+
+.column-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.column-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--algolia-dark);
+  letter-spacing: -0.01em;
+}
+
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--r-full);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.mode-badge--keyword {
+  background: var(--algolia-blue-light);
+  color: var(--algolia-blue);
+}
+
+.mode-badge--neural {
+  background: var(--algolia-neural-light);
+  color: var(--algolia-neural);
+}
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--algolia-text-muted);
+  min-height: 22px;
+}
+
+.nb-hits { font-weight: 500; }
+
+.stats-loading {
+  color: var(--algolia-text-light);
+  font-style: italic;
+}
+
+.response-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: var(--algolia-green-light);
+  color: var(--algolia-green);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.response-time::before {
+  content: '⚡';
+  font-size: 9px;
+}
+
+/* ── Hits Grid ──────────────────────────────────────────────────── */
+.hits-root {
+  padding: 12px;
+}
+
+.hits-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hits-item {
+  display: flex;
+}
+
+/* No results */
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--algolia-text-muted);
+  gap: 12px;
+}
+
+.no-results p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.no-results strong {
+  color: var(--algolia-text);
+}
+
+.hits-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--algolia-text-muted);
+  font-size: 14px;
+}
+
+/* ── Hit Card ───────────────────────────────────────────────────── */
+.hit-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--algolia-white);
+  border: 1px solid var(--algolia-border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  width: 100%;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  cursor: default;
+  /* Fixed card height ensures uniform grid rows */
+  min-height: 260px;
+}
+
+.hit-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--algolia-blue);
+}
+
+/* Image area — fixed height keeps all cards identical */
+.hit-image-wrapper {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background: var(--algolia-bg);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* ── Retrieval type badge ── */
+.retrieval-badge {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px 3px 5px;
+  border-radius: var(--r-full);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  pointer-events: none;
+}
+
+.retrieval-badge-icon {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* Vector only — purple */
+.retrieval-badge--vector {
+  background: rgba(120, 87, 255, 0.88);
+  color: #fff;
+}
+
+/* Keyword + Vector hybrid — blue-purple gradient */
+.retrieval-badge--hybrid {
+  background: linear-gradient(90deg, rgba(84,104,255,0.92) 0%, rgba(120,87,255,0.92) 100%);
+  color: #fff;
+}
+
+/* Keyword only — muted blue-grey */
+.retrieval-badge--keyword {
+  background: rgba(33, 36, 61, 0.72);
+  color: rgba(255,255,255,0.88);
+}
+
+.hit-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.28s ease;
+}
+
+.hit-card:hover .hit-image {
+  transform: scale(1.05);
+}
+
+.hit-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--algolia-text-light);
+  background: var(--algolia-bg);
+}
+
+/* Card body */
+.hit-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 8px;
+}
+
+.hit-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--algolia-dark);
+  line-height: 1.45;
+  /* Always occupy exactly 2 lines so all cards align */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.9em;
+}
+
+/* Algolia highlight colors */
+.ais-Highlight-highlighted,
+mark {
+  background: rgba(84, 104, 255, 0.14);
+  color: var(--algolia-blue);
+  font-style: normal;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* Attribute rows */
+.hit-attributes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+}
+
+/* Each attribute row has a fixed min-height so blank values don't collapse */
+.hit-attr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 8px;
+  background: var(--algolia-bg);
+  border-radius: var(--r-sm);
+  min-height: 28px;
+}
+
+.attr-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--algolia-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.attr-value {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--algolia-text);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 62%;
+}
+
+/* ── Pagination ──────────────────────────────────────────────────── */
+.pagination-wrapper {
+  padding: 12px 16px;
+  border-top: 1px solid var(--algolia-border);
+  display: flex;
+  justify-content: center;
+}
+
+/* Override react-instantsearch Pagination styles */
+.ais-Pagination-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ais-Pagination-item .ais-Pagination-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--algolia-border);
+  background: var(--algolia-white);
+  color: var(--algolia-text);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.ais-Pagination-item .ais-Pagination-link:hover {
+  background: var(--algolia-blue-light);
+  border-color: var(--algolia-blue);
+  color: var(--algolia-blue);
+}
+
+.ais-Pagination-item--selected .ais-Pagination-link {
+  background: var(--algolia-blue);
+  border-color: var(--algolia-blue);
+  color: #fff;
+  font-weight: 700;
+}
+
+.ais-Pagination-item--disabled .ais-Pagination-link {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ── Configuration Panel ─────────────────────────────────────────── */
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 36, 61, 0.45);
+  z-index: 200;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.config-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: var(--panel-w);
+  max-width: 100vw;
+  background: var(--algolia-white);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-xl);
+}
+
+.config-panel--open {
+  transform: translateX(0);
+}
+
+/* Panel header */
+.config-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 56px;
+  background: var(--algolia-dark);
+  color: #fff;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.config-panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.config-panel-header h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.8);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  background: rgba(255,255,255,0.22);
+  color: #fff;
+}
+
+/* Panel body */
+.config-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.config-section {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--algolia-border);
+}
+
+.config-section:last-child {
+  border-bottom: none;
+}
+
+.config-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--algolia-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 14px;
+}
+
+.config-hint {
+  font-size: 12px;
+  color: var(--algolia-text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+/* Section badges */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-sm);
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.section-badge--1 {
+  background: var(--algolia-blue-light);
+  color: var(--algolia-blue);
+}
+
+.section-badge--2 {
+  background: var(--algolia-neural-light);
+  color: var(--algolia-neural);
+}
+
+.section-badge--attrs {
+  background: var(--algolia-bg);
+  color: var(--algolia-text-muted);
+  font-size: 14px;
+}
+
+.section-badge--display {
+  background: var(--algolia-bg);
+  color: var(--algolia-text-muted);
+  font-size: 14px;
+}
+
+.section-badge--preset {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 13px;
+}
+
+/* Preset list */
+.preset-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preset-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--algolia-border);
+  border-radius: var(--r-sm);
+  background: var(--algolia-white);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.preset-item--active {
+  border-color: var(--algolia-blue);
+  background: var(--algolia-blue-light);
+}
+
+.preset-item-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.preset-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--algolia-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preset-item-active-badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--algolia-blue);
+  background: var(--algolia-white);
+  border: 1px solid var(--algolia-blue);
+  border-radius: 20px;
+  padding: 1px 6px;
+}
+
+.preset-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.preset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, opacity 0.15s;
+  padding: 4px 10px;
+  height: 28px;
+}
+
+.preset-btn--load {
+  background: var(--algolia-blue);
+  color: #fff;
+}
+.preset-btn--load:hover {
+  background: var(--algolia-blue-dark, #1a56cc);
+}
+
+.preset-btn--delete {
+  background: transparent;
+  color: var(--algolia-text-muted);
+  padding: 4px 6px;
+  border: 1.5px solid var(--algolia-border);
+}
+.preset-btn--delete:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.preset-btn--confirm {
+  background: var(--algolia-blue);
+  color: #fff;
+}
+.preset-btn--confirm:hover:not(:disabled) {
+  background: var(--algolia-blue-dark, #1a56cc);
+}
+.preset-btn--confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.preset-btn--cancel {
+  background: var(--algolia-bg);
+  color: var(--algolia-text-muted);
+  border: 1.5px solid var(--algolia-border);
+}
+.preset-btn--cancel:hover {
+  background: var(--algolia-border);
+  color: var(--algolia-text);
+}
+
+/* Save-as-preset inline row */
+.preset-save-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.preset-name-input {
+  flex: 1;
+  height: 32px;
+  padding: 0 10px;
+  border: 1.5px solid var(--algolia-blue);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--algolia-text);
+  background: var(--algolia-white);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(61, 113, 247, 0.12);
+}
+
+.preset-name-input:focus {
+  border-color: var(--algolia-blue);
+  box-shadow: 0 0 0 3px rgba(61, 113, 247, 0.18);
+}
+
+/* Add-preset trigger button */
+.preset-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1.5px dashed var(--algolia-border);
+  border-radius: var(--r-sm);
+  color: var(--algolia-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  width: 100%;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.preset-add-btn:hover {
+  border-color: var(--algolia-blue);
+  color: var(--algolia-blue);
+  background: var(--algolia-blue-light);
+}
+
+/* Form fields */
+.config-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.config-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--algolia-text-muted);
+  letter-spacing: 0.01em;
+}
+
+.config-field input,
+.config-field select {
+  height: 36px;
+  padding: 0 11px;
+  border: 1.5px solid var(--algolia-border);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--algolia-text);
+  background: var(--algolia-white);
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.config-field input:focus,
+.config-field select:focus {
+  border-color: var(--algolia-blue);
+  box-shadow: 0 0 0 3px var(--algolia-blue-muted);
+}
+
+.config-field input::placeholder {
+  color: var(--algolia-text-light);
+}
+
+/* Pair layout for Attr name + label */
+.config-field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Password toggle */
+.input-with-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-toggle input {
+  padding-right: 38px;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--algolia-text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.12s;
+}
+
+.eye-btn:hover { color: var(--algolia-blue); }
+
+/* Toggle field */
+.toggle-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-full);
+  background: var(--algolia-border-dark);
+  transition: background 0.2s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--algolia-blue);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(14px);
+}
+
+.toggle-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--algolia-text);
+  line-height: 1.3;
+}
+
+.toggle-hint {
+  font-size: 11px;
+  color: var(--algolia-text-muted);
+  line-height: 1.5;
+  padding-left: 43px;
+}
+
+/* Panel footer */
+.config-panel-footer {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--algolia-border);
+  background: var(--algolia-bg);
+  flex-shrink: 0;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.btn {
+  flex: 1;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.01em;
+}
+
+.btn-primary {
+  background: var(--algolia-blue);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--algolia-blue-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: var(--algolia-white);
+  color: var(--algolia-text);
+  border: 1.5px solid var(--algolia-border);
+}
+
+.btn-secondary:hover {
+  background: var(--algolia-bg);
+  border-color: var(--algolia-border-dark);
+}
+
+/* ── Empty / Setup State ─────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  gap: 16px;
+}
+
+.empty-state-icon {
+  color: var(--algolia-blue);
+  opacity: 0.6;
+}
+
+.empty-state h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--algolia-dark);
+  letter-spacing: -0.02em;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: var(--algolia-text-muted);
+  max-width: 380px;
+  line-height: 1.65;
+}
+
+.empty-state .btn {
+  flex: none;
+  width: auto;
+  padding: 0 28px;
+  height: 44px;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  /* On medium screens, reduce to 2-per-row hits */
+  .hits-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 960px) {
+  /* Stack the two columns vertically */
+  .comparison-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* Restore 3-col grid per column when stacked */
+  .hits-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .main-content { padding: 12px; }
+  .hits-list { grid-template-columns: repeat(2, 1fr); }
+  .config-panel { width: 100vw; }
+  .config-field-pair { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 400px) {
+  .hits-list { grid-template-columns: 1fr; }
+}
