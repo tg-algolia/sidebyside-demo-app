@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
+export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, onSave }) {
   const [local, setLocal] = useState(() => JSON.parse(JSON.stringify(config)));
   const [showApiKey1, setShowApiKey1] = useState(false);
   const [showApiKey2, setShowApiKey2] = useState(false);
@@ -46,7 +46,13 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
           setImportError('Invalid config file — missing required sections (index1, index2, attributes).');
           return;
         }
-        setLocal(parsed);
+        setLocal({
+          ...defaultConfig,
+          ...parsed,
+          index1: { ...defaultConfig.index1, ...parsed.index1 },
+          index2: { ...defaultConfig.index2, ...parsed.index2 },
+          attributes: { ...defaultConfig.attributes, ...parsed.attributes },
+        });
       } catch {
         setImportError('Could not parse file. Make sure it is a valid JSON config exported from this tool.');
       } finally {
@@ -71,7 +77,7 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
     }));
   };
 
-  const handleReset = () => setLocal(JSON.parse(JSON.stringify(config)));
+  const handleReset = () => setLocal(JSON.parse(JSON.stringify(defaultConfig)));
 
   return (
     <aside

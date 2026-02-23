@@ -171,6 +171,7 @@ export default function App() {
         isOpen={isPanelOpen}
         onClose={() => setIsPanelOpen(false)}
         config={config}
+        defaultConfig={DEFAULT_CONFIG}
         onSave={(newConfig) => {
           setConfig(newConfig);
           setIsPanelOpen(false);
