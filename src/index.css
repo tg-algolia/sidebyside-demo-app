@@ -827,7 +827,7 @@ mark {
 
 /* ── Sync columns divider ── */
 .sync-divider {
-  margin: 0 -20px;
+  margin: 0;
   padding: 12px 20px;
   background: var(--algolia-blue-light);
   border-top: 1.5px solid rgba(61, 113, 247, 0.18);

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
-  const [local, setLocal] = useState(config);
+  const [local, setLocal] = useState(() => JSON.parse(JSON.stringify(config)));
   const [showApiKey1, setShowApiKey1] = useState(false);
   const [showApiKey2, setShowApiKey2] = useState(false);
 
@@ -10,10 +10,13 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
   const [importError, setImportError] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Sync when external config changes (e.g. on first load)
+  // Reset local state to current config every time the panel opens
   useEffect(() => {
-    setLocal(config);
-  }, [config]);
+    if (isOpen) {
+      setLocal(JSON.parse(JSON.stringify(config)));
+      setImportError(null);
+    }
+  }, [isOpen]);
 
   // ── Export ──────────────────────────────────────────────────────
   const exportConfig = () => {
@@ -39,7 +42,6 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
     reader.onload = (evt) => {
       try {
         const parsed = JSON.parse(evt.target.result);
-        // Basic structure validation
         if (!parsed.index1 || !parsed.index2 || !parsed.attributes) {
           setImportError('Invalid config file — missing required sections (index1, index2, attributes).');
           return;
@@ -48,7 +50,6 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
       } catch {
         setImportError('Could not parse file. Make sure it is a valid JSON config exported from this tool.');
       } finally {
-        // Reset input so the same file can be re-imported if needed
         e.target.value = '';
       }
     };
@@ -114,6 +115,7 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
               type="text"
               value={exportName}
               onChange={(e) => setExportName(e.target.value)}
+              placeholder="e.g. acme-demo, linen-chest"
               spellCheck={false}
             />
           </div>
@@ -211,15 +213,17 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
                 spellCheck={false}
               />
             </Field>
-            <Field label="Search Mode">
-              <select
-                value={local.index1.searchMode}
-                onChange={(e) => updateIndex('index1', 'searchMode', e.target.value)}
-              >
-                <option value="keyword">🔤 Keyword</option>
-                <option value="neural">🧠 Neural (AI Search)</option>
-              </select>
-            </Field>
+            {!local.syncColumns && (
+              <Field label="Search Mode">
+                <select
+                  value={local.index1.searchMode}
+                  onChange={(e) => updateIndex('index1', 'searchMode', e.target.value)}
+                >
+                  <option value="keyword">🔤 Keyword</option>
+                  <option value="neural">🧠 Neural (AI Search)</option>
+                </select>
+              </Field>
+            )}
             <ToggleField
               label="Show retrieval type badge on hit tiles"
               hint='Sends getRankingInfo:true and reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'
@@ -228,6 +232,36 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
             />
           </div>
         </section>
+
+        {/* ── Sync divider ── */}
+        <div className="sync-divider">
+          <label className="sync-divider-toggle">
+            <span className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={!!local.syncColumns}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setLocal((prev) => ({
+                    ...prev,
+                    syncColumns: on,
+                    ...(on ? {
+                      index1: { ...prev.index1, searchMode: 'keyword' },
+                      index2: { ...prev.index2, searchMode: 'neural' },
+                    } : {}),
+                  }));
+                }}
+              />
+              <span className="toggle-slider" />
+            </span>
+            <span className="sync-divider-label">
+              <strong>Same index for both columns</strong>
+              <span className="sync-divider-hint">
+                Right column queries the same index using Neural; Left uses Keyword.
+              </span>
+            </span>
+          </label>
+        </div>
 
         {/* ── Index 2 ── */}
         <section className="config-section">
@@ -244,65 +278,79 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
                 placeholder="e.g. Neural Search"
               />
             </Field>
-            <Field label="App ID">
-              <input
-                type="text"
-                value={local.index2.appId}
-                onChange={(e) => updateIndex('index2', 'appId', e.target.value)}
-                placeholder="Your Algolia App ID"
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </Field>
-            <Field label="Search-only API Key">
-              <div className="input-with-toggle">
-                <input
-                  type={showApiKey2 ? 'text' : 'password'}
-                  value={local.index2.apiKey}
-                  onChange={(e) => updateIndex('index2', 'apiKey', e.target.value)}
-                  placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                <button
-                  type="button"
-                  className="eye-btn"
-                  onClick={() => setShowApiKey2((v) => !v)}
-                  aria-label={showApiKey2 ? 'Hide API key' : 'Show API key'}
-                >
-                  {showApiKey2 ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
-                  ) : (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-                  )}
-                </button>
+
+            {local.syncColumns ? (
+              <div className="sync-notice">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                  <path d="M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+                App ID, API Key, and Index Name are synced from Left Column.
+                Search mode is fixed to <strong>Neural</strong>.
               </div>
-            </Field>
-            <Field label="Index Name">
-              <input
-                type="text"
-                value={local.index2.indexName}
-                onChange={(e) => updateIndex('index2', 'indexName', e.target.value)}
-                placeholder="your_index_name"
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </Field>
-            <Field label="Search Mode">
-              <select
-                value={local.index2.searchMode}
-                onChange={(e) => updateIndex('index2', 'searchMode', e.target.value)}
-              >
-                <option value="keyword">🔤 Keyword</option>
-                <option value="neural">🧠 Neural (AI Search)</option>
-              </select>
-            </Field>
-            <ToggleField
-              label="Show retrieval type badge on hit tiles"
-              hint='Sends getRankingInfo:true and reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'
-              checked={!!local.index2.showRetrievalBadge}
-              onChange={(v) => updateIndex('index2', 'showRetrievalBadge', v)}
-            />
+            ) : (
+              <>
+                <Field label="App ID">
+                  <input
+                    type="text"
+                    value={local.index2.appId}
+                    onChange={(e) => updateIndex('index2', 'appId', e.target.value)}
+                    placeholder="Your Algolia App ID"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </Field>
+                <Field label="Search-only API Key">
+                  <div className="input-with-toggle">
+                    <input
+                      type={showApiKey2 ? 'text' : 'password'}
+                      value={local.index2.apiKey}
+                      onChange={(e) => updateIndex('index2', 'apiKey', e.target.value)}
+                      placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    <button
+                      type="button"
+                      className="eye-btn"
+                      onClick={() => setShowApiKey2((v) => !v)}
+                      aria-label={showApiKey2 ? 'Hide API key' : 'Show API key'}
+                    >
+                      {showApiKey2 ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                      )}
+                    </button>
+                  </div>
+                </Field>
+                <Field label="Index Name">
+                  <input
+                    type="text"
+                    value={local.index2.indexName}
+                    onChange={(e) => updateIndex('index2', 'indexName', e.target.value)}
+                    placeholder="your_index_name"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </Field>
+                <Field label="Search Mode">
+                  <select
+                    value={local.index2.searchMode}
+                    onChange={(e) => updateIndex('index2', 'searchMode', e.target.value)}
+                  >
+                    <option value="keyword">🔤 Keyword</option>
+                    <option value="neural">🧠 Neural (AI Search)</option>
+                  </select>
+                </Field>
+                <ToggleField
+                  label="Show retrieval type badge on hit tiles"
+                  hint='Sends getRankingInfo:true and reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'
+                  checked={!!local.index2.showRetrievalBadge}
+                  onChange={(v) => updateIndex('index2', 'showRetrievalBadge', v)}
+                />
+              </>
+            )}
           </div>
         </section>
 
