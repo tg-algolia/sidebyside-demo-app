@@ -36,6 +36,7 @@ const DEFAULT_CONFIG = {
     attr2Label: 'Price',
   },
   hitsPerPage: 9,
+  syncColumns: false,
 };
 
 // Fallback client used when credentials are not yet configured
@@ -75,17 +76,20 @@ export default function App() {
   }, [config.index1.appId, config.index1.apiKey]);
 
   const searchClient2 = useMemo(() => {
-    if (!config.index2.appId || !config.index2.apiKey) return createFallbackClient();
-    return algoliasearch(config.index2.appId, config.index2.apiKey);
-  }, [config.index2.appId, config.index2.apiKey]);
+    const appId = config.syncColumns ? config.index1.appId : config.index2.appId;
+    const apiKey = config.syncColumns ? config.index1.apiKey : config.index2.apiKey;
+    if (!appId || !apiKey) return createFallbackClient();
+    return algoliasearch(appId, apiKey);
+  }, [
+    config.syncColumns,
+    config.index1.appId, config.index1.apiKey,
+    config.index2.appId, config.index2.apiKey,
+  ]);
 
-  const isConfigured =
-    config.index1.appId &&
-    config.index1.apiKey &&
-    config.index1.indexName &&
-    config.index2.appId &&
-    config.index2.apiKey &&
-    config.index2.indexName;
+  const isConfigured = config.syncColumns
+    ? config.index1.appId && config.index1.apiKey && config.index1.indexName
+    : config.index1.appId && config.index1.apiKey && config.index1.indexName &&
+      config.index2.appId && config.index2.apiKey && config.index2.indexName;
 
   return (
     <div className="app">
@@ -132,7 +136,7 @@ export default function App() {
               />
               <SearchColumn
                 title={config.index1.title}
-                searchMode={config.index1.searchMode}
+                searchMode={config.syncColumns ? 'keyword' : config.index1.searchMode}
                 attributes={config.attributes}
                 showRetrievalBadge={config.index1.showRetrievalBadge}
               />
@@ -140,19 +144,19 @@ export default function App() {
 
             <InstantSearch
               searchClient={searchClient2}
-              indexName={config.index2.indexName}
+              indexName={config.syncColumns ? config.index1.indexName : config.index2.indexName}
               future={{ preserveSharedStateOnUnmount: true }}
             >
               <SyncSearchBox query={debouncedQuery} />
               <Configure
                 hitsPerPage={config.hitsPerPage}
-                {...(config.index2.showRetrievalBadge ? { getRankingInfo: true } : {})}
+                {...((config.syncColumns ? config.index1.showRetrievalBadge : config.index2.showRetrievalBadge) ? { getRankingInfo: true } : {})}
               />
               <SearchColumn
                 title={config.index2.title}
-                searchMode={config.index2.searchMode}
+                searchMode={config.syncColumns ? 'neural' : config.index2.searchMode}
                 attributes={config.attributes}
-                showRetrievalBadge={config.index2.showRetrievalBadge}
+                showRetrievalBadge={config.syncColumns ? config.index1.showRetrievalBadge : config.index2.showRetrievalBadge}
               />
             </InstantSearch>
           </div>

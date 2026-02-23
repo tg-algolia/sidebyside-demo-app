@@ -1,51 +1,61 @@
-import { useState, useEffect } from 'react';
-import useLocalStorage from '../hooks/useLocalStorage';
+import { useState, useEffect, useRef } from 'react';
 
 export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
   const [local, setLocal] = useState(config);
   const [showApiKey1, setShowApiKey1] = useState(false);
   const [showApiKey2, setShowApiKey2] = useState(false);
 
-  // Preset management
-  const [presets, setPresets] = useLocalStorage('sidebyside-presets', []);
-  const [presetName, setPresetName] = useState('');
-  const [isSavingPreset, setIsSavingPreset] = useState(false);
-  const [loadedPreset, setLoadedPreset] = useState(null);
+  // Import / Export state
+  const [exportName, setExportName] = useState('');
+  const [importError, setImportError] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Sync when external config changes (e.g. on first load)
   useEffect(() => {
     setLocal(config);
   }, [config]);
 
-  const savePreset = () => {
-    if (!presetName.trim()) return;
-    const name = presetName.trim();
-    setPresets((prev) => {
-      const idx = prev.findIndex((p) => p.name === name);
-      const entry = { name, config: local, savedAt: new Date().toISOString() };
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = entry;
-        return updated;
+  // ── Export ──────────────────────────────────────────────────────
+  const exportConfig = () => {
+    const utc = new Date().toISOString().replace(/:/g, '-').replace(/\.\d{3}/, '');
+    const prefix = exportName.trim() ? `${exportName.trim()}-` : '';
+    const filename = `${prefix}sidebyside-config-${utc}.json`;
+    const blob = new Blob([JSON.stringify(local, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Import ──────────────────────────────────────────────────────
+  const handleImportFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportError(null);
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        // Basic structure validation
+        if (!parsed.index1 || !parsed.index2 || !parsed.attributes) {
+          setImportError('Invalid config file — missing required sections (index1, index2, attributes).');
+          return;
+        }
+        setLocal(parsed);
+      } catch {
+        setImportError('Could not parse file. Make sure it is a valid JSON config exported from this tool.');
+      } finally {
+        // Reset input so the same file can be re-imported if needed
+        e.target.value = '';
       }
-      return [...prev, entry];
-    });
-    setPresetName('');
-    setIsSavingPreset(false);
-    setLoadedPreset(name);
+    };
+    reader.readAsText(file);
   };
 
-  const loadPreset = (preset) => {
-    setLocal(preset.config);
-    setLoadedPreset(preset.name);
-    setIsSavingPreset(false);
-  };
-
-  const deletePreset = (name) => {
-    setPresets((prev) => prev.filter((p) => p.name !== name));
-    if (loadedPreset === name) setLoadedPreset(null);
-  };
-
+  // ── Config update helpers ───────────────────────────────────────
   const updateIndex = (indexKey, field, value) => {
     setLocal((prev) => ({
       ...prev,
@@ -60,7 +70,7 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
     }));
   };
 
-  const handleReset = () => setLocal(config);
+  const handleReset = () => setLocal(JSON.parse(JSON.stringify(config)));
 
   return (
     <aside
@@ -88,76 +98,57 @@ export default function ConfigPanel({ isOpen, onClose, config, onSave }) {
       {/* Scrollable Body */}
       <div className="config-panel-body">
 
-        {/* ── Presets ── */}
+        {/* ── Import / Export ── */}
         <section className="config-section">
           <h3 className="config-section-title">
-            <span className="section-badge section-badge--preset">★</span>
-            Saved Presets
+            <span className="section-badge section-badge--io">⇅</span>
+            Import / Export
           </h3>
+          <p className="config-hint">
+            Export saves the current configuration as a <code>.json</code> file on your machine — import it later to restore everything.
+          </p>
 
-          {presets.length === 0 && !isSavingPreset && (
-            <p className="config-hint">No presets saved yet. Configure your indices below and save a preset to recall it later.</p>
-          )}
+          <div className="config-field" style={{ marginBottom: '10px' }}>
+            <span className="config-field-label">Export name (optional)</span>
+            <input
+              type="text"
+              value={exportName}
+              onChange={(e) => setExportName(e.target.value)}
+              spellCheck={false}
+            />
+          </div>
 
-          {presets.length > 0 && (
-            <ul className="preset-list">
-              {presets.map((p) => (
-                <li key={p.name} className={`preset-item ${loadedPreset === p.name ? 'preset-item--active' : ''}`}>
-                  <div className="preset-item-info">
-                    <span className="preset-item-name">{p.name}</span>
-                    {loadedPreset === p.name && <span className="preset-item-active-badge">Loaded</span>}
-                  </div>
-                  <div className="preset-item-actions">
-                    <button
-                      className="preset-btn preset-btn--load"
-                      onClick={() => loadPreset(p)}
-                      type="button"
-                      title="Load this preset into the editor"
-                    >
-                      Load
-                    </button>
-                    <button
-                      className="preset-btn preset-btn--delete"
-                      onClick={() => deletePreset(p.name)}
-                      type="button"
-                      aria-label={`Delete preset ${p.name}`}
-                      title="Delete preset"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {isSavingPreset ? (
-            <div className="preset-save-row">
-              <input
-                type="text"
-                className="preset-name-input"
-                value={presetName}
-                onChange={(e) => setPresetName(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') savePreset(); if (e.key === 'Escape') setIsSavingPreset(false); }}
-                placeholder="Preset name…"
-                autoFocus
-              />
-              <button className="preset-btn preset-btn--confirm" onClick={savePreset} type="button" disabled={!presetName.trim()}>
-                Save
-              </button>
-              <button className="preset-btn preset-btn--cancel" onClick={() => { setIsSavingPreset(false); setPresetName(''); }} type="button">
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button className="preset-add-btn" onClick={() => setIsSavingPreset(true)} type="button">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          <div className="io-row">
+            <button className="io-btn io-btn--export" onClick={exportConfig} type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
-              Save current as preset
+              Export Config
             </button>
+
+            <button className="io-btn io-btn--import" onClick={() => { setImportError(null); fileInputRef.current?.click(); }} type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              Import Config
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              className="io-file-input"
+              onChange={handleImportFile}
+              aria-label="Import configuration JSON file"
+            />
+          </div>
+
+          {importError && (
+            <p className="io-error">{importError}</p>
           )}
         </section>
 
