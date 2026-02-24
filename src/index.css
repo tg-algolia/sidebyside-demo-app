@@ -6,7 +6,7 @@
 /* ── Design Tokens ────────────────────────────────────────────── */
 :root {
   /* Algolia core palette */
-  --algolia-blue:        #5468FF;
+  --algolia-blue:        #003DFF;
   --algolia-blue-hover:  #3D52E6;
   --algolia-blue-light:  #EEF0FF;
   --algolia-blue-muted:  rgba(84, 104, 255, 0.12);
@@ -88,7 +88,7 @@ input, select, textarea { font-family: inherit; }
 /* ── Header ─────────────────────────────────────────────────────── */
 .app-header {
   height: var(--header-h);
-  background: var(--algolia-dark);
+  background: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -110,7 +110,7 @@ input, select, textarea { font-family: inherit; }
 .header-title h1 {
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: #003DFF;
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
@@ -119,7 +119,7 @@ input, select, textarea { font-family: inherit; }
   display: block;
   font-size: 10px;
   font-weight: 500;
-  color: rgba(255,255,255,0.45);
+  color: var(--algolia-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-top: 1px;
@@ -141,13 +141,13 @@ input, select, textarea { font-family: inherit; }
   border-radius: var(--r-md);
   border: 1.5px solid rgba(255,255,255,0.18);
   background: transparent;
-  color: rgba(255,255,255,0.6);
+  color: var(--algolia-blue);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .config-btn:hover {
-  background: rgba(255,255,255,0.1);
+  background: var(--algolia-blue);
   border-color: rgba(255,255,255,0.38);
   color: #fff;
 }
