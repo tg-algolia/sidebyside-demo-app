@@ -1,3 +1,5 @@
+import algoliaLogo from './Algolia_Logo.png';
+
 export default function Header({ onConfigOpen, isConfigured }) {
   return (
     <header className="app-header">
@@ -30,7 +32,7 @@ export default function Header({ onConfigOpen, isConfigured }) {
 function AlgoliaLogo() {
   return (
     <img
-      src="/src/components/Algolia_Logo.png"
+      src={algoliaLogo}
       alt="Algolia"
       className="algolia-logo"
       width="36"
