@@ -76,7 +76,7 @@ function RankingInfoButton({ rankingInfo }) {
   );
 }
 
-export default function HitCard({ hit, attributes, showRetrievalBadge }) {
+export default function HitCard({ hit, attributes, showRetrievalBadge, showRankingInfo }) {
   const { imageAttr, imagePrefix, imageSuffix, nameAttr, attr1Name, attr1Label, attr2Name, attr2Label } = attributes;
 
   const rawImageUrl = imageAttr ? hit[imageAttr] : null;
@@ -94,7 +94,7 @@ export default function HitCard({ hit, attributes, showRetrievalBadge }) {
 
   return (
     <article className="hit-card">
-      <RankingInfoButton rankingInfo={hit._rankingInfo} />
+      {showRankingInfo && <RankingInfoButton rankingInfo={hit._rankingInfo} />}
       <div className="hit-image-wrapper">
         {showRetrievalBadge && <RetrievalBadge rankingInfo={hit._rankingInfo} />}
         {imageUrl ? (
