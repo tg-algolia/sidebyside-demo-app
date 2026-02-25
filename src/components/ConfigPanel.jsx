@@ -121,7 +121,7 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
               type="text"
               value={exportName}
               onChange={(e) => setExportName(e.target.value)}
-              placeholder="e.g. acme-demo, linen-chest"
+              placeholder="e.g. algolia-test, sideBySide"
               spellCheck={false}
             />
           </div>
