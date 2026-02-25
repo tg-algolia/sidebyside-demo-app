@@ -42,7 +42,41 @@ function RetrievalBadge({ rankingInfo }) {
   );
 }
 
-export default function HitCard({ hit, attributes, showRetrievalBadge }) {
+function RankingInfoButton({ rankingInfo }) {
+  if (!rankingInfo) return null;
+
+  const keywordScore = rankingInfo.keywordScore ?? null;
+  const semanticScore = rankingInfo.semanticScore ?? null;
+  const neuralScore = rankingInfo.neuralScore ?? null;
+  // For keyword-only results Algolia copies keywordScore into neuralScore — treat those as null
+
+  const fmt = (val) =>
+    val !== undefined && val !== null ? val.toFixed(4) : '—';
+
+  return (
+    <div className="ranking-info-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+      </svg>
+      <div className="ranking-info-tooltip">
+        <div className="ranking-info-row">
+          <span className="ranking-info-label">Keyword Score</span>
+          <span className="ranking-info-value">{fmt(keywordScore)}</span>
+        </div>
+        <div className="ranking-info-row">
+          <span className="ranking-info-label">Semantic Score</span>
+          <span className="ranking-info-value">{fmt(semanticScore)}</span>
+        </div>
+        <div className="ranking-info-row">
+          <span className="ranking-info-label">Neural Score</span>
+          <span className="ranking-info-value">{fmt(neuralScore)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function HitCard({ hit, attributes, showRetrievalBadge, showRankingInfo }) {
   const { imageAttr, imagePrefix, imageSuffix, nameAttr, attr1Name, attr1Label, attr2Name, attr2Label } = attributes;
 
   const rawImageUrl = imageAttr ? hit[imageAttr] : null;
@@ -60,6 +94,7 @@ export default function HitCard({ hit, attributes, showRetrievalBadge }) {
 
   return (
     <article className="hit-card">
+      {showRankingInfo && <RankingInfoButton rankingInfo={hit._rankingInfo} />}
       <div className="hit-image-wrapper">
         {showRetrievalBadge && <RetrievalBadge rankingInfo={hit._rankingInfo} />}
         {imageUrl ? (

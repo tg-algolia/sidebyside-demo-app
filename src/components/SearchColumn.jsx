@@ -30,7 +30,7 @@ function ColumnStats() {
   );
 }
 
-function HitsSection({ attributes, showRetrievalBadge }) {
+function HitsSection({ attributes, showRetrievalBadge, showRankingInfo }) {
   const { results } = useInstantSearch();
   const hasNoResults = results && results.nbHits === 0 && results.query !== '';
 
@@ -50,7 +50,7 @@ function HitsSection({ attributes, showRetrievalBadge }) {
   return (
     <Hits
       hitComponent={(props) => (
-        <HitCard {...props} attributes={attributes} showRetrievalBadge={showRetrievalBadge} />
+        <HitCard {...props} attributes={attributes} showRetrievalBadge={showRetrievalBadge} showRankingInfo={showRankingInfo} />
       )}
       classNames={{
         root: 'hits-root',
@@ -62,7 +62,7 @@ function HitsSection({ attributes, showRetrievalBadge }) {
   );
 }
 
-export default function SearchColumn({ title, searchMode, attributes, showRetrievalBadge }) {
+export default function SearchColumn({ title, searchMode, attributes, showRetrievalBadge, showRankingInfo }) {
   const modeLabel = searchMode === 'neural' ? '🧠 Neural' : '🔤 Keyword';
 
   return (
@@ -77,7 +77,7 @@ export default function SearchColumn({ title, searchMode, attributes, showRetrie
         <ColumnStats />
       </div>
 
-      <HitsSection attributes={attributes} showRetrievalBadge={showRetrievalBadge} />
+      <HitsSection attributes={attributes} showRetrievalBadge={showRetrievalBadge} showRankingInfo={showRankingInfo} />
 
       <div className="pagination-wrapper">
         <Pagination

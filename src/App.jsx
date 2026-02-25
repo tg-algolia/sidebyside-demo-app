@@ -132,7 +132,7 @@ export default function App() {
               <SyncSearchBox query={debouncedQuery} />
               <Configure
                 hitsPerPage={config.hitsPerPage}
-                {...(config.index1.showRetrievalBadge ? { getRankingInfo: true } : {})}
+                getRankingInfo={true}
               />
               <SearchColumn
                 title={config.index1.title}
@@ -150,13 +150,14 @@ export default function App() {
               <SyncSearchBox query={debouncedQuery} />
               <Configure
                 hitsPerPage={config.hitsPerPage}
-                {...((config.syncColumns ? config.index1.showRetrievalBadge : config.index2.showRetrievalBadge) ? { getRankingInfo: true } : {})}
+                getRankingInfo={true}
               />
               <SearchColumn
                 title={config.index2.title}
                 searchMode={config.syncColumns ? 'neural' : config.index2.searchMode}
                 attributes={config.attributes}
                 showRetrievalBadge={config.syncColumns ? config.index1.showRetrievalBadge : config.index2.showRetrievalBadge}
+                showRankingInfo={true}
               />
             </InstantSearch>
           </div>
