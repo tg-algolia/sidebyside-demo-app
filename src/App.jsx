@@ -157,7 +157,6 @@ export default function App() {
                 searchMode={config.syncColumns ? 'neural' : config.index2.searchMode}
                 attributes={config.attributes}
                 showRetrievalBadge={config.syncColumns ? config.index1.showRetrievalBadge : config.index2.showRetrievalBadge}
-                showRankingInfo={true}
               />
             </InstantSearch>
           </div>
