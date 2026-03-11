@@ -261,9 +261,9 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
               <span className="toggle-slider" />
             </span>
             <span className="sync-divider-label">
-              <strong>Same index for both columns</strong>
+              <strong>Same App for both columns</strong>
               <span className="sync-divider-hint">
-                Right column queries the same index using Neural; Left uses Keyword.
+                Shares App ID &amp; API Key from Left Column — set a separate index name per column.
               </span>
             </span>
           </label>
@@ -286,14 +286,32 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
             </Field>
 
             {local.syncColumns ? (
-              <div className="sync-notice">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
-                  <path d="M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
-                </svg>
-                App ID, API Key, and Index Name are synced from Left Column.
-                Search mode is fixed to <strong>Neural</strong>.
-              </div>
+              <>
+                <div className="sync-notice">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                    <path d="M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                  </svg>
+                  App ID and API Key are shared from the Left Column.
+                  Search mode is fixed to <strong>Neural</strong>.
+                </div>
+                <Field label="Index Name">
+                  <input
+                    type="text"
+                    value={local.index2.indexName}
+                    onChange={(e) => updateIndex('index2', 'indexName', e.target.value)}
+                    placeholder="your_index_name"
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </Field>
+                <ToggleField
+                  label="Show retrieval type badge on hit tiles"
+                  hint='Sends getRankingInfo:true and reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'
+                  checked={!!local.index2.showRetrievalBadge}
+                  onChange={(v) => updateIndex('index2', 'showRetrievalBadge', v)}
+                />
+              </>
             ) : (
               <>
                 <Field label="App ID">

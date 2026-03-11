@@ -87,7 +87,7 @@ export default function App() {
   ]);
 
   const isConfigured = config.syncColumns
-    ? config.index1.appId && config.index1.apiKey && config.index1.indexName
+    ? config.index1.appId && config.index1.apiKey && config.index1.indexName && config.index2.indexName
     : config.index1.appId && config.index1.apiKey && config.index1.indexName &&
       config.index2.appId && config.index2.apiKey && config.index2.indexName;
 
@@ -144,7 +144,7 @@ export default function App() {
 
             <InstantSearch
               searchClient={searchClient2}
-              indexName={config.syncColumns ? config.index1.indexName : config.index2.indexName}
+              indexName={config.index2.indexName}
               future={{ preserveSharedStateOnUnmount: true }}
             >
               <SyncSearchBox query={debouncedQuery} />
