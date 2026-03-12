@@ -251,6 +251,7 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                   setLocal((prev) => ({
                     ...prev,
                     syncColumns: on,
+                    syncIndex: on ? prev.syncIndex : false,
                     ...(on ? {
                       index1: { ...prev.index1, searchMode: 'keyword' },
                       index2: { ...prev.index2, searchMode: 'neural' },
@@ -263,10 +264,31 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
             <span className="sync-divider-label">
               <strong>Same App for both columns</strong>
               <span className="sync-divider-hint">
-                Shares App ID &amp; API Key from Left Column — set a separate index name per column.
+                Shares App ID &amp; API Key from Left Column
               </span>
             </span>
           </label>
+
+          {local.syncColumns && (
+            <label className="sync-divider-toggle" style={{ marginTop: '10px' }}>
+              <span className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={!!local.syncIndex}
+                  onChange={(e) =>
+                    setLocal((prev) => ({ ...prev, syncIndex: e.target.checked }))
+                  }
+                />
+                <span className="toggle-slider" />
+              </span>
+              <span className="sync-divider-label">
+                <strong>Query the the SAME INDEX</strong>
+                <span className="sync-divider-hint">
+                  Left column uses keyword, the Right uses NeuralSearch
+                </span>
+              </span>
+            </label>
+          )}
         </div>
 
         {/* ── Index 2 ── */}
@@ -292,19 +314,26 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                     <path d="M17 1l4 4-4 4" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
                     <path d="M7 23l-4-4 4-4" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
                   </svg>
-                  App ID and API Key are shared from the Left Column.
-                  Search mode is fixed to <strong>Neural</strong>.
+                  <span>
+                    App ID and API Key are shared from the Left Column.
+                    {local.syncIndex
+                      ? <> Index Name is also shared. Left uses <strong>Keyword</strong>, Right uses <strong>Neural</strong>.</>
+                      : <> Search mode is fixed to <strong>Neural</strong>.</>
+                    }
+                  </span>
                 </div>
-                <Field label="Index Name">
-                  <input
-                    type="text"
-                    value={local.index2.indexName}
-                    onChange={(e) => updateIndex('index2', 'indexName', e.target.value)}
-                    placeholder="your_index_name"
-                    autoComplete="off"
-                    spellCheck={false}
-                  />
-                </Field>
+                {!local.syncIndex && (
+                  <Field label="Index Name">
+                    <input
+                      type="text"
+                      value={local.index2.indexName}
+                      onChange={(e) => updateIndex('index2', 'indexName', e.target.value)}
+                      placeholder="your_index_name"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </Field>
+                )}
                 <ToggleField
                   label="Show retrieval type badge on hit tiles"
                   hint='Sends getRankingInfo:true and reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'

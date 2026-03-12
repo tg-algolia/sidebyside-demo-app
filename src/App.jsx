@@ -37,6 +37,7 @@ const DEFAULT_CONFIG = {
   },
   hitsPerPage: 9,
   syncColumns: false,
+  syncIndex: false,
 };
 
 // Fallback client used when credentials are not yet configured
@@ -87,7 +88,9 @@ export default function App() {
   ]);
 
   const isConfigured = config.syncColumns
-    ? config.index1.appId && config.index1.apiKey && config.index1.indexName && config.index2.indexName
+    ? config.syncIndex
+      ? config.index1.appId && config.index1.apiKey && config.index1.indexName
+      : config.index1.appId && config.index1.apiKey && config.index1.indexName && config.index2.indexName
     : config.index1.appId && config.index1.apiKey && config.index1.indexName &&
       config.index2.appId && config.index2.apiKey && config.index2.indexName;
 
@@ -133,6 +136,7 @@ export default function App() {
               <Configure
                 hitsPerPage={config.hitsPerPage}
                 getRankingInfo={true}
+                {...(config.syncIndex ? { disableNeuralSearch: true } : {})}
               />
               <SearchColumn
                 title={config.index1.title}
@@ -144,13 +148,14 @@ export default function App() {
 
             <InstantSearch
               searchClient={searchClient2}
-              indexName={config.index2.indexName}
+              indexName={config.syncColumns && config.syncIndex ? config.index1.indexName : config.index2.indexName}
               future={{ preserveSharedStateOnUnmount: true }}
             >
               <SyncSearchBox query={debouncedQuery} />
               <Configure
                 hitsPerPage={config.hitsPerPage}
                 getRankingInfo={true}
+                {...(config.syncIndex ? { disableNeuralSearch: false } : {})}
               />
               <SearchColumn
                 title={config.index2.title}
