@@ -1,4 +1,5 @@
-import { Hits, Pagination, useInstantSearch } from 'react-instantsearch';
+import { useInfiniteHits, useInstantSearch } from 'react-instantsearch';
+import { useRef, useEffect } from 'react';
 import HitCard from './HitCard';
 
 function ColumnStats() {
@@ -30,8 +31,26 @@ function ColumnStats() {
   );
 }
 
-function HitsSection({ attributes, showRetrievalBadge, showRankingInfo }) {
+function HitsSection({ attributes, showRetrievalBadge, showRankingInfo, columnId, selectedObjectID, onHitClick, onItemsChange }) {
   const { results } = useInstantSearch();
+  const { items, showMore, isLastPage } = useInfiniteHits();
+  const sentinelRef = useRef(null);
+
+  useEffect(() => {
+    onItemsChange?.(items);
+  }, [items]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!sentinelRef.current || isLastPage) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) showMore();
+      });
+    });
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [isLastPage, showMore]);
+
   const hasNoResults = results && results.nbHits === 0 && results.query !== '';
 
   if (hasNoResults) {
@@ -48,21 +67,32 @@ function HitsSection({ attributes, showRetrievalBadge, showRankingInfo }) {
   }
 
   return (
-    <Hits
-      hitComponent={(props) => (
-        <HitCard {...props} attributes={attributes} showRetrievalBadge={showRetrievalBadge} showRankingInfo={showRankingInfo} />
-      )}
-      classNames={{
-        root: 'hits-root',
-        list: 'hits-list',
-        item: 'hits-item',
-        emptyRoot: 'hits-empty',
-      }}
-    />
+    <div className="hits-root">
+      <ol className="hits-list">
+        {items.map((hit) => (
+          <li
+            key={hit.objectID}
+            className="hits-item"
+            data-objectid={hit.objectID}
+            data-col={columnId}
+          >
+            <HitCard
+              hit={hit}
+              attributes={attributes}
+              showRetrievalBadge={showRetrievalBadge}
+              showRankingInfo={showRankingInfo}
+              isSelected={hit.objectID === selectedObjectID}
+              onClick={(e) => onHitClick?.(hit.objectID, columnId, e)}
+            />
+          </li>
+        ))}
+      </ol>
+      {!isLastPage && <div ref={sentinelRef} className="infinite-scroll-sentinel" />}
+    </div>
   );
 }
 
-export default function SearchColumn({ title, searchMode, attributes, showRetrievalBadge, showRankingInfo }) {
+export default function SearchColumn({ title, searchMode, attributes, showRetrievalBadge, showRankingInfo, columnId, selectedObjectID, onHitClick, onItemsChange }) {
   const modeLabel = searchMode === 'neural' ? '🧠 Neural' : '🔤 Keyword';
 
   return (
@@ -77,25 +107,15 @@ export default function SearchColumn({ title, searchMode, attributes, showRetrie
         <ColumnStats />
       </div>
 
-      <HitsSection attributes={attributes} showRetrievalBadge={showRetrievalBadge} showRankingInfo={showRankingInfo} />
-
-      <div className="pagination-wrapper">
-        <Pagination
-          padding={2}
-          classNames={{
-            root: 'ais-Pagination',
-            list: 'ais-Pagination-list',
-            item: 'ais-Pagination-item',
-            link: 'ais-Pagination-link',
-            selectedItem: 'ais-Pagination-item--selected',
-            disabledItem: 'ais-Pagination-item--disabled',
-            previousPageItem: 'ais-Pagination-item--previousPage',
-            nextPageItem: 'ais-Pagination-item--nextPage',
-            firstPageItem: 'ais-Pagination-item--firstPage',
-            lastPageItem: 'ais-Pagination-item--lastPage',
-          }}
-        />
-      </div>
+      <HitsSection
+        attributes={attributes}
+        showRetrievalBadge={showRetrievalBadge}
+        showRankingInfo={showRankingInfo}
+        columnId={columnId}
+        selectedObjectID={selectedObjectID}
+        onHitClick={onHitClick}
+        onItemsChange={onItemsChange}
+      />
     </div>
   );
 }

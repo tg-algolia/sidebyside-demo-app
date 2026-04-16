@@ -401,9 +401,15 @@ input, select, textarea { font-family: inherit; }
   width: 100%;
   max-width: 14rem;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-  cursor: default;
+  cursor: pointer;
   /* Fixed card height ensures uniform grid rows */
   min-height: 260px;
+}
+
+.hit-card--selected {
+  border-color: var(--algolia-blue);
+  box-shadow: 0 0 0 3px var(--algolia-blue-muted), var(--shadow-md);
+  transform: translateY(-2px);
 }
 
 .hit-card:hover {
@@ -1197,6 +1203,47 @@ mark {
   height: 44px;
   font-size: 14px;
   margin-top: 8px;
+}
+
+/* ── Infinite scroll sentinel ───────────────────────────────────── */
+.infinite-scroll-sentinel {
+  height: 1px;
+  width: 100%;
+}
+
+/* ── Hit connector line ──────────────────────────────────────────── */
+.connector-svg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  overflow: visible;
+}
+
+/* ── Hit toast ───────────────────────────────────────────────────── */
+@keyframes hit-toast-show {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  78%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+}
+
+.hit-toast {
+  position: fixed;
+  z-index: 999;
+  background: var(--algolia-dark);
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  transform: translateX(-50%);
+  animation: hit-toast-show 2.2s ease forwards;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────── */

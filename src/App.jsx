@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import algoliasearch from 'algoliasearch/lite';
 import { InstantSearch, Configure } from 'react-instantsearch';
 import Header from './components/Header';
@@ -15,7 +15,6 @@ const DEFAULT_CONFIG = {
     indexName: '',
     title: 'Keyword Search',
     searchMode: 'keyword',
-    showRetrievalBadge: false,
   },
   index2: {
     appId: '',
@@ -23,8 +22,8 @@ const DEFAULT_CONFIG = {
     indexName: '',
     title: 'Neural Search',
     searchMode: 'neural',
-    showRetrievalBadge: false,
   },
+  showRetrievalBadge: false,
   attributes: {
     imageAttr: 'image',
     imagePrefix: '',
@@ -35,10 +34,73 @@ const DEFAULT_CONFIG = {
     attr2Name: 'price',
     attr2Label: 'Price',
   },
-  hitsPerPage: 9,
   syncColumns: false,
   syncIndex: false,
 };
+
+function ConnectorLine({ selectedObjectID }) {
+  const [line, setLine] = useState(null);
+
+  const recalc = useCallback(() => {
+    if (!selectedObjectID) { setLine(null); return; }
+    const find = (col) => {
+      const nodes = document.querySelectorAll(`[data-col="${col}"][data-objectid]`);
+      return [...nodes].find((n) => n.dataset.objectid === selectedObjectID) ?? null;
+    };
+    const a = find('1');
+    const b = find('2');
+    if (!a || !b) { setLine(null); return; }
+    const ra = a.getBoundingClientRect();
+    const rb = b.getBoundingClientRect();
+    setLine({
+      x1: ra.right, y1: ra.top + ra.height / 2,
+      x2: rb.left,  y2: rb.top + rb.height / 2,
+    });
+  }, [selectedObjectID]);
+
+  useEffect(() => {
+    recalc();
+    window.addEventListener('scroll', recalc, { passive: true });
+    window.addEventListener('resize', recalc);
+    return () => {
+      window.removeEventListener('scroll', recalc);
+      window.removeEventListener('resize', recalc);
+    };
+  }, [recalc]);
+
+  if (!line) return null;
+  const { x1, y1, x2, y2 } = line;
+  const mx = (x1 + x2) / 2;
+
+  return (
+    <svg className="connector-svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="conn-grad" gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
+          <stop offset="0%" stopColor="#003DFF" />
+          <stop offset="100%" stopColor="#7857FF" />
+        </linearGradient>
+      </defs>
+      <path
+        d={`M ${x1} ${y1} C ${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`}
+        stroke="url(#conn-grad)"
+        strokeWidth="2.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <circle cx={x1} cy={y1} r="5" fill="#003DFF" />
+      <circle cx={x2} cy={y2} r="5" fill="#7857FF" />
+    </svg>
+  );
+}
+
+function HitToast({ toast }) {
+  if (!toast) return null;
+  return (
+    <div key={toast.key} className="hit-toast" style={{ left: toast.x, top: toast.y }}>
+      {toast.message}
+    </div>
+  );
+}
 
 // Fallback client used when credentials are not yet configured
 const createFallbackClient = () => ({
@@ -64,6 +126,38 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [selectedObjectID, setSelectedObjectID] = useState(null);
+  const [toast, setToast] = useState(null);
+  const col1ItemsRef = useRef([]);
+  const col2ItemsRef = useRef([]);
+  const toastTimerRef = useRef(null);
+
+  const onCol1Items = useCallback((items) => { col1ItemsRef.current = items; }, []);
+  const onCol2Items = useCallback((items) => { col2ItemsRef.current = items; }, []);
+
+  const handleHitClick = useCallback((objectID, colId, event) => {
+    if (selectedObjectID === objectID) {
+      setSelectedObjectID(null);
+      return;
+    }
+    const otherItems = colId === 1 ? col2ItemsRef.current : col1ItemsRef.current;
+    const existsInOther = otherItems.some((item) => item.objectID === objectID);
+    if (existsInOther) {
+      setSelectedObjectID(objectID);
+      setToast(null);
+    } else {
+      setSelectedObjectID(null);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      setToast({ message: "Record not found in the other column", x: event.clientX, y: event.clientY - 52, key: Date.now() });
+      toastTimerRef.current = setTimeout(() => setToast(null), 2200);
+    }
+  }, [selectedObjectID]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') setSelectedObjectID(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Debounce query to limit API calls while typing
   useEffect(() => {
@@ -126,7 +220,10 @@ export default function App() {
             </button>
           </div>
         ) : (
-          <div className="comparison-container">
+          <div
+            className="comparison-container"
+            onClick={(e) => { if (!e.target.closest('.hit-card')) setSelectedObjectID(null); }}
+          >
             <InstantSearch
               searchClient={searchClient1}
               indexName={config.index1.indexName}
@@ -134,15 +231,19 @@ export default function App() {
             >
               <SyncSearchBox query={debouncedQuery} />
               <Configure
-                hitsPerPage={config.hitsPerPage}
+                hitsPerPage={9}
                 getRankingInfo={true}
-                {...(config.syncIndex ? { disableNeuralSearch: true } : {})}
+                disableNeuralSearch={config.syncColumns || config.index1.searchMode === 'keyword'}
               />
               <SearchColumn
                 title={config.index1.title}
                 searchMode={config.syncColumns ? 'keyword' : config.index1.searchMode}
                 attributes={config.attributes}
-                showRetrievalBadge={config.index1.showRetrievalBadge}
+                showRetrievalBadge={config.showRetrievalBadge}
+                columnId={1}
+                selectedObjectID={selectedObjectID}
+                onHitClick={handleHitClick}
+                onItemsChange={onCol1Items}
               />
             </InstantSearch>
 
@@ -153,16 +254,20 @@ export default function App() {
             >
               <SyncSearchBox query={debouncedQuery} />
               <Configure
-                hitsPerPage={config.hitsPerPage}
+                hitsPerPage={9}
                 getRankingInfo={true}
-                {...(config.syncIndex ? { disableNeuralSearch: false } : {})}
+                disableNeuralSearch={!config.syncColumns && config.index2.searchMode === 'keyword'}
               />
               <SearchColumn
                 title={config.index2.title}
                 searchMode={config.syncColumns ? 'neural' : config.index2.searchMode}
                 attributes={config.attributes}
-                showRetrievalBadge={config.syncColumns ? config.index1.showRetrievalBadge : config.index2.showRetrievalBadge}
+                showRetrievalBadge={config.showRetrievalBadge}
                 showRankingInfo={true}
+                columnId={2}
+                selectedObjectID={selectedObjectID}
+                onHitClick={handleHitClick}
+                onItemsChange={onCol2Items}
               />
             </InstantSearch>
           </div>
@@ -183,6 +288,9 @@ export default function App() {
           setIsPanelOpen(false);
         }}
       />
+
+      <ConnectorLine selectedObjectID={selectedObjectID} />
+      <HitToast toast={toast} />
     </div>
   );
 }

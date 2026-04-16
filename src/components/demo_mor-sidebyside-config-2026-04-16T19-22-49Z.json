@@ -1,0 +1,31 @@
+{
+  "index1": {
+    "appId": "T3J6BKODKM",
+    "apiKey": "85be8167f9237efc6997e81f8af59f73",
+    "indexName": "demo_mor",
+    "title": "Keyword Search",
+    "searchMode": "keyword",
+    "showRetrievalBadge": true
+  },
+  "index2": {
+    "appId": "",
+    "apiKey": "",
+    "indexName": "",
+    "title": "Neural Search",
+    "searchMode": "neural",
+    "showRetrievalBadge": true
+  },
+  "attributes": {
+    "imageAttr": "Image Src",
+    "imagePrefix": "",
+    "imageSuffix": "",
+    "nameAttr": "Title",
+    "attr1Name": "brand",
+    "attr1Label": "Brand",
+    "attr2Name": "COLOR",
+    "attr2Label": "Color"
+  },
+  "hitsPerPage": 9,
+  "syncColumns": true,
+  "syncIndex": true
+}

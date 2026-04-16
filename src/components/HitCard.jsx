@@ -47,6 +47,7 @@ function RankingInfoButton({ rankingInfo }) {
 
   const keywordScore = rankingInfo.keywordScore ?? null;
   const semanticScore = rankingInfo.semanticScore ?? null;
+  const cosineScore = rankingInfo.semanticSimilarity ?? null;
   const neuralScore = rankingInfo.neuralScore ?? null;
   // For keyword-only results Algolia copies keywordScore into neuralScore — treat those as null
 
@@ -71,12 +72,16 @@ function RankingInfoButton({ rankingInfo }) {
           <span className="ranking-info-label">Neural Score</span>
           <span className="ranking-info-value">{fmt(neuralScore)}</span>
         </div>
+        <div className="ranking-info-row">
+          <span className="ranking-info-label">Cosine Score</span>
+          <span className="ranking-info-value">{fmt(cosineScore)}</span>
+        </div>
       </div>
     </div>
   );
 }
 
-export default function HitCard({ hit, attributes, showRetrievalBadge, showRankingInfo }) {
+export default function HitCard({ hit, attributes, showRetrievalBadge, showRankingInfo, isSelected, onClick }) {
   const { imageAttr, imagePrefix, imageSuffix, nameAttr, attr1Name, attr1Label, attr2Name, attr2Label } = attributes;
 
   const rawImageUrl = imageAttr ? hit[imageAttr] : null;
@@ -93,7 +98,10 @@ export default function HitCard({ hit, attributes, showRetrievalBadge, showRanki
   const displayName = nameAttr ? (hit[nameAttr] || '—') : '—';
 
   return (
-    <article className="hit-card">
+    <article
+      className={`hit-card${isSelected ? ' hit-card--selected' : ''}`}
+      onClick={onClick}
+    >
       {showRankingInfo && <RankingInfoButton rankingInfo={hit._rankingInfo} />}
       <div className="hit-image-wrapper">
         {showRetrievalBadge && <RetrievalBadge rankingInfo={hit._rankingInfo} />}

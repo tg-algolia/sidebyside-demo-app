@@ -230,12 +230,6 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                 </select>
               </Field>
             )}
-            <ToggleField
-              label="Show retrieval type badge on hit tiles"
-              hint='Sends getRankingInfo:true and reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'
-              checked={!!local.index1.showRetrievalBadge}
-              onChange={(v) => updateIndex('index1', 'showRetrievalBadge', v)}
-            />
           </div>
         </section>
 
@@ -334,12 +328,6 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                     />
                   </Field>
                 )}
-                <ToggleField
-                  label="Show retrieval type badge on hit tiles"
-                  hint='Sends getRankingInfo:true and reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'
-                  checked={!!local.index2.showRetrievalBadge}
-                  onChange={(v) => updateIndex('index2', 'showRetrievalBadge', v)}
-                />
               </>
             ) : (
               <>
@@ -396,12 +384,6 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                     <option value="neural">🧠 Neural (AI Search)</option>
                   </select>
                 </Field>
-                <ToggleField
-                  label="Show retrieval type badge on hit tiles"
-                  hint='Sends getRankingInfo:true and reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'
-                  checked={!!local.index2.showRetrievalBadge}
-                  onChange={(v) => updateIndex('index2', 'showRetrievalBadge', v)}
-                />
               </>
             )}
           </div>
@@ -487,32 +469,16 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                 />
               </Field>
             </div>
+
+            <ToggleField
+              label="Show retrieval type badge on hit tiles"
+              hint='Reads _rankingInfo.semanticScore to display "Keyword", "Vector", or "Keyword & Vector" on each result.'
+              checked={!!local.showRetrievalBadge}
+              onChange={(v) => setLocal((prev) => ({ ...prev, showRetrievalBadge: v }))}
+            />
           </div>
         </section>
 
-        {/* ── Display Settings ── */}
-        <section className="config-section">
-          <h3 className="config-section-title">
-            <span className="section-badge section-badge--display">⊞</span>
-            Display Settings
-          </h3>
-          <div className="config-fields">
-            <Field label="Hits Per Page (3 columns × N rows)">
-              <select
-                value={local.hitsPerPage}
-                onChange={(e) =>
-                  setLocal((prev) => ({ ...prev, hitsPerPage: parseInt(e.target.value, 10) }))
-                }
-              >
-                <option value={6}>6 hits &nbsp;(2 rows)</option>
-                <option value={9}>9 hits &nbsp;(3 rows)</option>
-                <option value={12}>12 hits (4 rows)</option>
-                <option value={15}>15 hits (5 rows)</option>
-                <option value={18}>18 hits (6 rows)</option>
-              </select>
-            </Field>
-          </div>
-        </section>
       </div>
 
       {/* Panel Footer */}
