@@ -3,6 +3,21 @@ import { Highlight } from 'react-instantsearch';
 const FALLBACK_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23F0F0FA' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Inter%2Csans-serif' font-size='13' fill='%23BBBBCC'%3ENo Image%3C/text%3E%3C/svg%3E`;
 
 /**
+ * Resolves an attribute value from a record, supporting both flat keys
+ * ("name") and dotted/nested paths ("hierarchy.lvl1" → hit.hierarchy.lvl1).
+ * Falls back to a literal flat lookup so keys that genuinely contain a dot
+ * still work.
+ */
+function getNested(obj, path) {
+  if (!obj || !path) return undefined;
+  if (obj[path] !== undefined) return obj[path];
+  return path.split('.').reduce(
+    (acc, key) => (acc !== null && acc !== undefined ? acc[key] : undefined),
+    obj
+  );
+}
+
+/**
  * Reads _rankingInfo.semanticScore and matchedWords to determine
  * how this hit was retrieved. Only present when getRankingInfo:true
  * was sent in the search request.
@@ -84,18 +99,19 @@ function RankingInfoButton({ rankingInfo }) {
 export default function HitCard({ hit, attributes, showRetrievalBadge, showRankingInfo, isSelected, onClick }) {
   const { imageAttr, imagePrefix, imageSuffix, nameAttr, attr1Name, attr1Label, attr2Name, attr2Label } = attributes;
 
-  const rawImageUrl = imageAttr ? hit[imageAttr] : null;
+  const rawImageUrl = imageAttr ? getNested(hit, imageAttr) : null;
   const imageUrl = rawImageUrl ? `${imagePrefix || ''}${rawImageUrl}${imageSuffix || ''}` : null;
-  const attr1Value = attr1Name ? hit[attr1Name] : undefined;
-  const attr2Value = attr2Name ? hit[attr2Name] : undefined;
+  const attr1Value = attr1Name ? getNested(hit, attr1Name) : undefined;
+  const attr2Value = attr2Name ? getNested(hit, attr2Name) : undefined;
 
-  // Check if highlight data exists for name attribute to avoid errors
+  // Check if highlight data exists for name attribute to avoid errors.
+  // _highlightResult mirrors the record shape, so nested paths must be walked too.
   const hasHighlight =
     nameAttr &&
     hit._highlightResult &&
-    hit._highlightResult[nameAttr] !== undefined;
+    getNested(hit._highlightResult, nameAttr) !== undefined;
 
-  const displayName = nameAttr ? (hit[nameAttr] || '—') : '—';
+  const displayName = nameAttr ? (getNested(hit, nameAttr) || '—') : '—';
 
   return (
     <article
