@@ -3,6 +3,7 @@ import algoliasearch from 'algoliasearch/lite';
 import { InstantSearch, Configure } from 'react-instantsearch';
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
+import OptionalFilters from './components/OptionalFilters';
 import SyncSearchBox from './components/SyncSearchBox';
 import SearchColumn from './components/SearchColumn';
 import ConfigPanel from './components/ConfigPanel';
@@ -125,6 +126,7 @@ export default function App() {
   const [config, setConfig] = useLocalStorage('sidebyside-config', DEFAULT_CONFIG);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [optionalFilters, setOptionalFilters] = useState([]);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedObjectID, setSelectedObjectID] = useState(null);
   const [toast, setToast] = useState(null);
@@ -202,6 +204,11 @@ export default function App() {
           onClear={() => setQuery('')}
         />
 
+        <OptionalFilters
+          filters={optionalFilters}
+          onChange={setOptionalFilters}
+        />
+
         {!isConfigured ? (
           <div className="empty-state">
             <div className="empty-state-icon">
@@ -233,6 +240,7 @@ export default function App() {
               <Configure
                 hitsPerPage={9}
                 getRankingInfo={true}
+                optionalFilters={optionalFilters.length ? optionalFilters : undefined}
                 disableNeuralSearch={config.syncColumns || config.index1.searchMode === 'keyword'}
               />
               <SearchColumn
@@ -256,6 +264,7 @@ export default function App() {
               <Configure
                 hitsPerPage={9}
                 getRankingInfo={true}
+                optionalFilters={optionalFilters.length ? optionalFilters : undefined}
                 disableNeuralSearch={!config.syncColumns && config.index2.searchMode === 'keyword'}
               />
               <SearchColumn
