@@ -16,6 +16,7 @@ const DEFAULT_CONFIG = {
     indexName: '',
     title: 'Keyword Search',
     searchMode: 'keyword',
+    synonymsEnabled: true,
   },
   index2: {
     appId: '',
@@ -23,6 +24,7 @@ const DEFAULT_CONFIG = {
     indexName: '',
     title: 'Neural Search',
     searchMode: 'neural',
+    synonymsEnabled: true,
   },
   showRetrievalBadge: false,
   attributes: {
@@ -241,6 +243,7 @@ export default function App() {
                 hitsPerPage={9}
                 getRankingInfo={true}
                 optionalFilters={optionalFilters.length ? optionalFilters : undefined}
+                synonyms={config.index1.synonymsEnabled !== false}
                 disableNeuralSearch={config.syncColumns || config.index1.searchMode === 'keyword'}
               />
               <SearchColumn
@@ -265,6 +268,7 @@ export default function App() {
                 hitsPerPage={9}
                 getRankingInfo={true}
                 optionalFilters={optionalFilters.length ? optionalFilters : undefined}
+                synonyms={config.index2.synonymsEnabled !== false}
                 disableNeuralSearch={!config.syncColumns && config.index2.searchMode === 'keyword'}
               />
               <SearchColumn
