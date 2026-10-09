@@ -66,13 +66,33 @@ function RankingInfoButton({ rankingInfo }) {
 
   // Newer API responses nest scores under `signals`; older ones expose flat fields.
   const sig = rankingInfo.signals ?? {};
-  const keywordScore = sig.kwRRF ?? rankingInfo.keywordScore ?? null;
-  const semanticScore = sig.vecRRF ?? rankingInfo.semanticScore ?? null;
-  const neuralScore = sig.rrf ?? rankingInfo.neuralScore ?? null;
-  const cosineScore = rankingInfo.semanticSimilarity ?? null;
+  const has = (v) => v !== null && v !== undefined;
+  const kwPos = sig.kwPos;
+  const vecPos = sig.vecPos;
+  const kwRRF = sig.kwRRF ?? rankingInfo.keywordScore;
+  const vecRRF = sig.vecRRF ?? rankingInfo.semanticScore;
+  const fused = sig.rrf ?? rankingInfo.neuralScore;
+  const cosine = rankingInfo.semanticSimilarity;
 
-  const fmt = (val) =>
-    typeof val === 'number' ? val.toFixed(4) : '—';
+  const inKw = has(kwPos) || (!sig.rrf && has(kwRRF));
+  const inVec = has(vecPos) || has(cosine);
+  const retrieved = inKw && inVec ? 'Keyword + Vector' : inVec ? 'Vector only' : inKw ? 'Keyword only' : '—';
+
+  const num = (v, d = 4) => (typeof v === 'number' ? v.toFixed(d) : '—');
+  const rank = (v) => (has(v) ? `#${v + 1}` : '—');
+  // Cosine similarity as a percentage is easier to talk through live
+  const cosineLabel = typeof cosine === 'number' ? `${num(cosine, 3)} (${(cosine * 100).toFixed(1)}%)` : '—';
+  const fusedLabel = typeof fused === 'number'
+    ? `${num(fused, 3)}${typeof kwRRF === 'number' && typeof vecRRF === 'number' ? ` (${num(kwRRF, 3)} + ${num(vecRRF, 3)})` : ''}`
+    : '—';
+
+  const rows = [
+    ['Retrieved by', retrieved],
+    ['Keyword rank', rank(kwPos)],
+    ['Vector rank', rank(vecPos)],
+    ['Cosine similarity', cosineLabel],
+    ['Fused score (RRF)', fusedLabel],
+  ];
 
   return (
     <div className="ranking-info-btn">
@@ -80,22 +100,12 @@ function RankingInfoButton({ rankingInfo }) {
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
       </svg>
       <div className="ranking-info-tooltip">
-        <div className="ranking-info-row">
-          <span className="ranking-info-label">Keyword Score</span>
-          <span className="ranking-info-value">{fmt(keywordScore)}</span>
-        </div>
-        <div className="ranking-info-row">
-          <span className="ranking-info-label">Vector Score</span>
-          <span className="ranking-info-value">{fmt(semanticScore)}</span>
-        </div>
-        <div className="ranking-info-row">
-          <span className="ranking-info-label">Combined (RRF)</span>
-          <span className="ranking-info-value">{fmt(neuralScore)}</span>
-        </div>
-        <div className="ranking-info-row">
-          <span className="ranking-info-label">Cosine Score</span>
-          <span className="ranking-info-value">{fmt(cosineScore)}</span>
-        </div>
+        {rows.map(([label, value]) => (
+          <div className="ranking-info-row" key={label}>
+            <span className="ranking-info-label">{label}</span>
+            <span className="ranking-info-value">{value}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

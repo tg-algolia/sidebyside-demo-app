@@ -642,7 +642,8 @@ input, select, textarea { font-family: inherit; }
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  min-width: 170px;
+  min-width: 260px;
+  white-space: nowrap;
   background: var(--algolia-white);
   border: 1px solid var(--algolia-border);
   border-radius: var(--r-sm);
