@@ -18,7 +18,8 @@ function getNested(obj, path) {
 }
 
 /**
- * Reads _rankingInfo.semanticScore and matchedWords to determine
+ * Reads _rankingInfo.signals (kwPos / vecPos), falling back to the legacy
+ * semanticScore and matchedWords fields, to determine
  * how this hit was retrieved. Only present when getRankingInfo:true
  * was sent in the search request.
  *
@@ -29,10 +30,13 @@ function getNested(obj, path) {
 function RetrievalBadge({ rankingInfo }) {
   if (!rankingInfo) return null;
 
-  const hasVector =
-    rankingInfo.semanticScore !== undefined && rankingInfo.semanticScore > 0;
-  const hasKeyword =
-    (rankingInfo.matchedWords ?? rankingInfo.words ?? 0) > 0;
+  const sig = rankingInfo.signals;
+  const hasVector = sig
+    ? sig.vecPos !== null && sig.vecPos !== undefined
+    : rankingInfo.semanticScore !== undefined && rankingInfo.semanticScore > 0;
+  const hasKeyword = sig
+    ? sig.kwPos !== null && sig.kwPos !== undefined
+    : (rankingInfo.matchedWords ?? rankingInfo.words ?? 0) > 0;
 
   let label, variant;
   if (hasVector && hasKeyword) {
@@ -60,14 +64,15 @@ function RetrievalBadge({ rankingInfo }) {
 function RankingInfoButton({ rankingInfo }) {
   if (!rankingInfo) return null;
 
-  const keywordScore = rankingInfo.keywordScore ?? null;
-  const semanticScore = rankingInfo.semanticScore ?? null;
+  // Newer API responses nest scores under `signals`; older ones expose flat fields.
+  const sig = rankingInfo.signals ?? {};
+  const keywordScore = sig.kwRRF ?? rankingInfo.keywordScore ?? null;
+  const semanticScore = sig.vecRRF ?? rankingInfo.semanticScore ?? null;
+  const neuralScore = sig.rrf ?? rankingInfo.neuralScore ?? null;
   const cosineScore = rankingInfo.semanticSimilarity ?? null;
-  const neuralScore = rankingInfo.neuralScore ?? null;
-  // For keyword-only results Algolia copies keywordScore into neuralScore — treat those as null
 
   const fmt = (val) =>
-    val !== undefined && val !== null ? val.toFixed(4) : '—';
+    typeof val === 'number' ? val.toFixed(4) : '—';
 
   return (
     <div className="ranking-info-btn">
@@ -80,11 +85,11 @@ function RankingInfoButton({ rankingInfo }) {
           <span className="ranking-info-value">{fmt(keywordScore)}</span>
         </div>
         <div className="ranking-info-row">
-          <span className="ranking-info-label">Semantic Score</span>
+          <span className="ranking-info-label">Vector Score</span>
           <span className="ranking-info-value">{fmt(semanticScore)}</span>
         </div>
         <div className="ranking-info-row">
-          <span className="ranking-info-label">Neural Score</span>
+          <span className="ranking-info-label">Combined (RRF)</span>
           <span className="ranking-info-value">{fmt(neuralScore)}</span>
         </div>
         <div className="ranking-info-row">
