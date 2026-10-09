@@ -244,6 +244,20 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                 <span className="sync-divider-hint">Apply this index's synonyms at query time</span>
               </span>
             </label>
+            <label className="sync-divider-toggle">
+              <span className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={local.index1.rulesEnabled !== false}
+                  onChange={(e) => updateIndex('index1', 'rulesEnabled', e.target.checked)}
+                />
+                <span className="toggle-slider" />
+              </span>
+              <span className="sync-divider-label">
+                <strong>Rules</strong>
+                <span className="sync-divider-hint">Apply this index's Rules at query time</span>
+              </span>
+            </label>
           </div>
         </section>
 
@@ -412,6 +426,20 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
               <span className="sync-divider-label">
                 <strong>Synonyms</strong>
                 <span className="sync-divider-hint">Apply this index's synonyms at query time</span>
+              </span>
+            </label>
+            <label className="sync-divider-toggle">
+              <span className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={local.index2.rulesEnabled !== false}
+                  onChange={(e) => updateIndex('index2', 'rulesEnabled', e.target.checked)}
+                />
+                <span className="toggle-slider" />
+              </span>
+              <span className="sync-divider-label">
+                <strong>Rules</strong>
+                <span className="sync-divider-hint">Apply this index's Rules at query time</span>
               </span>
             </label>
           </div>
