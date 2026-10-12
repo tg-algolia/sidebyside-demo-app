@@ -2,6 +2,36 @@ import { useInfiniteHits, useInstantSearch } from 'react-instantsearch';
 import { useRef, useEffect } from 'react';
 import HitCard from './HitCard';
 
+const TOGGLES = [
+  { key: 'synonyms', field: 'synonymsEnabled', label: 'Synonyms', hint: 'Apply synonyms at query time' },
+  { key: 'rules', field: 'rulesEnabled', label: 'Rules', hint: 'Apply query Rules (pins, boosts, redirects)' },
+  { key: 'drr', field: 'drrEnabled', label: 'DRR', hint: 'Dynamic Re-Ranking based on click & conversion events' },
+];
+
+function FeatureToggles({ toggles, onToggle }) {
+  return (
+    <div className="feature-toggles">
+      {TOGGLES.map(({ key, field, label, hint }) => {
+        const on = toggles[key];
+        return (
+          <button
+            key={key}
+            type="button"
+            role="switch"
+            aria-checked={on}
+            title={`${hint} — ${on ? 'on' : 'off'}`}
+            className={`feature-toggle${on ? ' feature-toggle--on' : ''}`}
+            onClick={() => onToggle(field)}
+          >
+            <span className="feature-toggle-track"><span className="feature-toggle-thumb" /></span>
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function ColumnStats() {
   const { results, status } = useInstantSearch();
 
@@ -92,7 +122,7 @@ function HitsSection({ attributes, showRetrievalBadge, showRankingInfo, columnId
   );
 }
 
-export default function SearchColumn({ title, searchMode, attributes, showRetrievalBadge, showRankingInfo, columnId, selectedObjectID, onHitClick, onItemsChange }) {
+export default function SearchColumn({ title, searchMode, attributes, showRetrievalBadge, showRankingInfo, columnId, selectedObjectID, onHitClick, onItemsChange, toggles, onToggle }) {
   const modeLabel = searchMode === 'neural' ? '🧠 Neural' : '🔤 Keyword';
 
   return (
@@ -104,6 +134,7 @@ export default function SearchColumn({ title, searchMode, attributes, showRetrie
             {modeLabel}
           </span>
         </div>
+        {toggles && <FeatureToggles toggles={toggles} onToggle={onToggle} />}
         <ColumnStats />
       </div>
 

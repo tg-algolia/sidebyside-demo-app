@@ -18,6 +18,7 @@ const DEFAULT_CONFIG = {
     searchMode: 'keyword',
     synonymsEnabled: true,
     rulesEnabled: true,
+    drrEnabled: true,
   },
   index2: {
     appId: '',
@@ -27,6 +28,7 @@ const DEFAULT_CONFIG = {
     searchMode: 'neural',
     synonymsEnabled: true,
     rulesEnabled: true,
+    drrEnabled: true,
   },
   showRetrievalBadge: false,
   attributes: {
@@ -138,6 +140,13 @@ export default function App() {
   const col2ItemsRef = useRef([]);
   const toastTimerRef = useRef(null);
 
+  const toggleIndexSetting = useCallback((indexKey, field) => {
+    setConfig((prev) => ({
+      ...prev,
+      [indexKey]: { ...prev[indexKey], [field]: prev[indexKey][field] === false },
+    }));
+  }, [setConfig]);
+
   const onCol1Items = useCallback((items) => { col1ItemsRef.current = items; }, []);
   const onCol2Items = useCallback((items) => { col2ItemsRef.current = items; }, []);
 
@@ -247,6 +256,7 @@ export default function App() {
                 optionalFilters={optionalFilters.length ? optionalFilters : undefined}
                 synonyms={config.index1.synonymsEnabled !== false}
                 enableRules={config.index1.rulesEnabled !== false}
+                enableReRanking={config.index1.drrEnabled !== false}
                 disableNeuralSearch={config.syncColumns || config.index1.searchMode === 'keyword'}
               />
               <SearchColumn
@@ -255,6 +265,8 @@ export default function App() {
                 attributes={config.attributes}
                 showRetrievalBadge={config.showRetrievalBadge}
                 columnId={1}
+                toggles={{ synonyms: config.index1.synonymsEnabled !== false, rules: config.index1.rulesEnabled !== false, drr: config.index1.drrEnabled !== false }}
+                onToggle={(field) => toggleIndexSetting('index1', field)}
                 selectedObjectID={selectedObjectID}
                 onHitClick={handleHitClick}
                 onItemsChange={onCol1Items}
@@ -273,6 +285,7 @@ export default function App() {
                 optionalFilters={optionalFilters.length ? optionalFilters : undefined}
                 synonyms={config.index2.synonymsEnabled !== false}
                 enableRules={config.index2.rulesEnabled !== false}
+                enableReRanking={config.index2.drrEnabled !== false}
                 disableNeuralSearch={!config.syncColumns && config.index2.searchMode === 'keyword'}
               />
               <SearchColumn
@@ -282,6 +295,8 @@ export default function App() {
                 showRetrievalBadge={config.showRetrievalBadge}
                 showRankingInfo={true}
                 columnId={2}
+                toggles={{ synonyms: config.index2.synonymsEnabled !== false, rules: config.index2.rulesEnabled !== false, drr: config.index2.drrEnabled !== false }}
+                onToggle={(field) => toggleIndexSetting('index2', field)}
                 selectedObjectID={selectedObjectID}
                 onHitClick={handleHitClick}
                 onItemsChange={onCol2Items}

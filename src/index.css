@@ -452,6 +452,68 @@ input, select, textarea { font-family: inherit; }
   color: var(--algolia-neural);
 }
 
+/* Per-column feature toggles */
+.feature-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.feature-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 6px;
+  border: 1px solid var(--algolia-border-dark);
+  border-radius: var(--r-full);
+  background: var(--algolia-white);
+  color: var(--algolia-text-muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.feature-toggle:hover {
+  border-color: var(--algolia-blue);
+}
+
+.feature-toggle-track {
+  position: relative;
+  width: 22px;
+  height: 12px;
+  border-radius: var(--r-full);
+  background: var(--algolia-border-dark);
+  transition: background 0.15s;
+}
+
+.feature-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--algolia-white);
+  transition: transform 0.15s;
+}
+
+.feature-toggle--on {
+  background: var(--algolia-blue-light);
+  border-color: transparent;
+  color: var(--algolia-blue);
+}
+
+.feature-toggle--on .feature-toggle-track {
+  background: var(--algolia-blue);
+}
+
+.feature-toggle--on .feature-toggle-thumb {
+  transform: translateX(10px);
+}
+
 /* Stats bar */
 .stats-bar {
   display: flex;
