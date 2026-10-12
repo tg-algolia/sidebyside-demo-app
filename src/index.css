@@ -702,16 +702,28 @@ input, select, textarea { font-family: inherit; }
 .ranking-info-tooltip {
   display: none;
   position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 260px;
+  top: calc(100% + 8px);
+  right: -4px;
+  min-width: 280px;
+  box-sizing: border-box;
   white-space: nowrap;
   background: var(--algolia-white);
-  border: 1px solid var(--algolia-border);
-  border-radius: var(--r-sm);
-  box-shadow: var(--shadow-md);
-  padding: 8px 10px;
+  border: 1px solid var(--algolia-border-dark);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(33, 36, 61, 0.16);
+  padding: 6px 14px;
   z-index: 100;
+  cursor: default;
+}
+
+/* Invisible bridge so the tooltip doesn't close while moving the mouse onto it */
+.ranking-info-tooltip::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  height: 10px;
 }
 
 .ranking-info-btn:hover .ranking-info-tooltip {
@@ -721,28 +733,27 @@ input, select, textarea { font-family: inherit; }
 .ranking-info-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 2px 0;
+  align-items: baseline;
+  gap: 24px;
+  padding: 7px 0;
 }
 
 .ranking-info-row + .ranking-info-row {
   border-top: 1px solid var(--algolia-border);
-  margin-top: 4px;
-  padding-top: 6px;
 }
 
 .ranking-info-label {
   font-size: 11px;
+  font-weight: 500;
   color: var(--algolia-text-muted);
-  white-space: nowrap;
 }
 
 .ranking-info-value {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--algolia-text);
+  color: var(--algolia-dark);
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .hit-image {
