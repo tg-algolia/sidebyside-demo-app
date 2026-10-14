@@ -8,7 +8,7 @@ const FALLBACK_SVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
  * Falls back to a literal flat lookup so keys that genuinely contain a dot
  * still work.
  */
-function getNested(obj, path) {
+export function getNested(obj, path) {
   if (!obj || !path) return undefined;
   if (obj[path] !== undefined) return obj[path];
   return path.split('.').reduce(
@@ -25,7 +25,7 @@ const isEmpty = (v) => v === undefined || v === null || v === '' || (Array.isArr
  * (e.g. "image.originalSrc, fields.headerImage.fields.file.url").
  * Array items can be addressed by index ("fields.mainTeachers.0.fields.image...").
  */
-function resolveAttr(obj, spec) {
+export function resolveAttr(obj, spec) {
   if (!spec) return { value: undefined, attr: undefined };
   for (const attr of spec.split(',').map((a) => a.trim()).filter(Boolean)) {
     const value = getNested(obj, attr);

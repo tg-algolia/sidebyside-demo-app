@@ -1557,3 +1557,102 @@ mark {
   transform: none;
   box-shadow: none;
 }
+
+/* Ask AI: in-progress indicator shown while the agent searches / before text arrives */
+.agent-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--algolia-text-muted);
+}
+
+.agent-progress-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--algolia-border-dark);
+  border-top-color: var(--algolia-blue);
+  border-radius: 50%;
+  animation: agent-spin 0.8s linear infinite;
+}
+
+.agent-progress-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: -4px;
+}
+
+.agent-progress-dots i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: agent-dot 1.2s ease-in-out infinite;
+}
+
+.agent-progress-dots i:nth-child(2) { animation-delay: 0.2s; }
+.agent-progress-dots i:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes agent-spin { to { transform: rotate(360deg); } }
+@keyframes agent-dot {
+  0%, 80%, 100% { opacity: 0.2; }
+  40% { opacity: 1; }
+}
+
+/* Ask AI: client-side tool output */
+.agent-hits-headline {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--algolia-text-muted);
+}
+
+.agent-hit-skeleton {
+  width: 11rem;
+  height: 269px;
+  border-radius: var(--r-md);
+  background: linear-gradient(90deg, var(--algolia-bg) 25%, var(--algolia-border) 50%, var(--algolia-bg) 75%);
+  background-size: 200% 100%;
+  animation: agent-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes agent-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.agent-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.agent-chip {
+  padding: 6px 12px;
+  border: 1px solid var(--algolia-border-dark);
+  border-radius: var(--r-full);
+  background: var(--algolia-white);
+  color: var(--algolia-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.agent-chip:hover:not(:disabled) {
+  border-color: var(--algolia-blue);
+  color: var(--algolia-blue);
+}
+
+.agent-chip:disabled { cursor: default; opacity: 0.6; }
+
+.agent-chip--selected {
+  background: var(--algolia-blue-light);
+  border-color: var(--algolia-blue);
+  color: var(--algolia-blue);
+  opacity: 1;
+}

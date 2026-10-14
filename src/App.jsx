@@ -8,6 +8,7 @@ import OptionalFilters from './components/OptionalFilters';
 import SyncSearchBox from './components/SyncSearchBox';
 import SearchColumn from './components/SearchColumn';
 import HitCard from './components/HitCard';
+import { createAgentTools, createAgentTransport } from './components/agentTools';
 import ConfigPanel from './components/ConfigPanel';
 import useLocalStorage from './hooks/useLocalStorage';
 
@@ -66,7 +67,48 @@ function AskAiButton({ slot, open, onClick }) {
   );
 }
 
-const CHAT_TRANSLATIONS = { header: { title: 'Ask AI' } };
+const CHAT_TRANSLATIONS = {
+  header: { title: 'Ask AI' },
+  messages: { loaderText: 'Thinking…' },
+};
+
+// The widget's built-in loader only covers the wait for the first byte. After that the
+// assistant message exists but is empty while the agent runs its search tool, which reads
+// as "nothing is happening". Show progress in that gap and hold back the action buttons
+// until there is text to act on.
+function AgentMessageActions({ actions = [], message }) {
+  const parts = message?.parts ?? [];
+  const textParts = parts.filter((p) => p.type === 'text');
+  const streamingText = textParts.some((p) => p.state === 'streaming');
+  const hasText = textParts.some((p) => p.text);
+  const toolParts = parts.filter((p) => p.type?.startsWith('tool-'));
+  const searching = toolParts.some((p) => p.state !== 'output-available' && p.state !== 'output-error');
+
+  if (!hasText || streamingText) {
+    if (streamingText) return null;
+    return (
+      <div className="agent-progress" role="status" aria-live="polite">
+        <span className="agent-progress-spinner" aria-hidden="true" />
+        <span>{searching || toolParts.length === 0 ? 'Searching the catalog' : 'Writing a response'}</span>
+        <span className="agent-progress-dots" aria-hidden="true"><i /><i /><i /></span>
+      </div>
+    );
+  }
+
+  return actions.map((action, i) => (
+    <button
+      key={i}
+      type="button"
+      className="ais-Button ais-Button--ghost ais-Button--sm ais-Button--icon-only ais-ChatMessage-action"
+      disabled={action.disabled}
+      aria-label={action.title}
+      title={action.title}
+      onClick={() => action.onClick?.(message)}
+    >
+      {action.icon ? <action.icon /> : null}
+    </button>
+  ));
+}
 const CHAT_CLASSNAMES = { root: 'ais-ChatOverlayLayout' };
 
 // Keeps an unpublished/misconfigured agent from taking down the whole page.
@@ -247,11 +289,32 @@ export default function App() {
 
   // Agent Studio names its search tools per index ("algolia_search_index_<indexName>"),
   // but the Chat widget only ships a renderer for the generic "algolia_search_index".
+  const agentCtxRef = useRef({});
+  agentCtxRef.current = {
+    appId: config.syncColumns ? config.index1.appId : config.index2.appId,
+    apiKey: config.syncColumns ? config.index1.apiKey : config.index2.apiKey,
+    indexName: config.syncColumns && config.syncIndex ? config.index1.indexName : config.index2.indexName,
+    attributes: config.attributes,
+    query,
+    setQuery,
+    getHits: () => col2ItemsRef.current,
+  };
+
   const chatTools = useMemo(() => {
     const searchTool = createDefaultTools(chatItem)[SearchIndexToolType];
     const names = [config.index1.indexName, config.index2.indexName].filter(Boolean);
-    return Object.fromEntries(names.map((name) => [`${SearchIndexToolType}_${name}`, searchTool]));
+    return {
+      ...createAgentTools(agentCtxRef),
+      ...Object.fromEntries(names.map((name) => [`${SearchIndexToolType}_${name}`, searchTool])),
+    };
   }, [chatItem, config.index1.indexName, config.index2.indexName]);
+
+  const agentAppId = config.syncColumns ? config.index1.appId : config.index2.appId;
+  const agentApiKey = config.syncColumns ? config.index1.apiKey : config.index2.apiKey;
+  const agentTransport = useMemo(
+    () => (agentId ? createAgentTransport({ appId: agentAppId, apiKey: agentApiKey, agentId }) : null),
+    [agentId, agentAppId, agentApiKey]
+  );
 
   const isConfigured = config.syncColumns
     ? config.syncIndex
@@ -362,10 +425,11 @@ export default function App() {
               {agentId && (
                 <AskAiBoundary key={agentId} slot={askAiSlot}>
                   <Chat
-                    agentId={agentId}
+                    transport={agentTransport}
                     itemComponent={chatItem}
                     tools={chatTools}
                     translations={CHAT_TRANSLATIONS}
+                    actionsComponent={AgentMessageActions}
                     classNames={CHAT_CLASSNAMES}
                     toggleButtonComponent={({ open, onClick }) => (
                       <AskAiButton slot={askAiSlot} open={open} onClick={onClick} />
