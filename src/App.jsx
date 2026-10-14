@@ -1,11 +1,13 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { Component, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import algoliasearch from 'algoliasearch/lite';
-import { InstantSearch, Configure } from 'react-instantsearch';
+import { createPortal } from 'react-dom';
+import { InstantSearch, Configure, Chat } from 'react-instantsearch';
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
 import OptionalFilters from './components/OptionalFilters';
 import SyncSearchBox from './components/SyncSearchBox';
 import SearchColumn from './components/SearchColumn';
+import HitCard from './components/HitCard';
 import ConfigPanel from './components/ConfigPanel';
 import useLocalStorage from './hooks/useLocalStorage';
 
@@ -26,6 +28,7 @@ const DEFAULT_CONFIG = {
     indexName: '',
     title: 'Neural Search',
     searchMode: 'neural',
+    agentId: '',
     synonymsEnabled: true,
     rulesEnabled: true,
     drrEnabled: true,
@@ -44,6 +47,45 @@ const DEFAULT_CONFIG = {
   syncColumns: false,
   syncIndex: false,
 };
+
+function AskAiButton({ slot, open, onClick }) {
+  if (!slot) return null;
+  return createPortal(
+    <button
+      type="button"
+      className={`ask-ai-btn${open ? ' ask-ai-btn--open' : ''}`}
+      onClick={onClick}
+      aria-pressed={open}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6L12 2zm7 11l.9 2.6L22.5 16.5l-2.6.9L19 20l-.9-2.6-2.6-.9 2.6-.9L19 13zM5 14l.7 2.1 2.1.7-2.1.7L5 19.6l-.7-2.1-2.1-.7 2.1-.7L5 14z" />
+      </svg>
+      Ask AI
+    </button>,
+    slot
+  );
+}
+
+const CHAT_TRANSLATIONS = { header: { title: 'Ask AI' } };
+const CHAT_CLASSNAMES = { root: 'ais-ChatOverlayLayout' };
+
+// Keeps an unpublished/misconfigured agent from taking down the whole page.
+class AskAiBoundary extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error) { console.warn('[Ask AI] agent error:', error); }
+  render() {
+    if (!this.state.error) return this.props.children;
+    const { slot } = this.props;
+    return slot ? createPortal(
+      <button type="button" className="ask-ai-btn ask-ai-btn--error" disabled
+        title={`Agent unavailable: ${this.state.error.message || 'unknown error'}. Check that it is published in Agent Studio.`}>
+        Ask AI unavailable
+      </button>,
+      slot
+    ) : null;
+  }
+}
 
 function ConnectorLine({ selectedObjectID }) {
   const [line, setLine] = useState(null);
@@ -136,6 +178,7 @@ export default function App() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedObjectID, setSelectedObjectID] = useState(null);
   const [toast, setToast] = useState(null);
+  const [askAiSlot, setAskAiSlot] = useState(null);
   const col1ItemsRef = useRef([]);
   const col2ItemsRef = useRef([]);
   const toastTimerRef = useRef(null);
@@ -196,6 +239,12 @@ export default function App() {
     config.index2.appId, config.index2.apiKey,
   ]);
 
+  const agentId = config.index2.agentId?.trim();
+  const chatItem = useCallback(
+    ({ item }) => <HitCard hit={item} attributes={config.attributes} />,
+    [config.attributes]
+  );
+
   const isConfigured = config.syncColumns
     ? config.syncIndex
       ? config.index1.appId && config.index1.apiKey && config.index1.indexName
@@ -215,6 +264,7 @@ export default function App() {
           query={query}
           onChange={setQuery}
           onClear={() => setQuery('')}
+          askAiSlotRef={setAskAiSlot}
         />
 
         <OptionalFilters
@@ -301,6 +351,19 @@ export default function App() {
                 onHitClick={handleHitClick}
                 onItemsChange={onCol2Items}
               />
+              {agentId && (
+                <AskAiBoundary key={agentId} slot={askAiSlot}>
+                  <Chat
+                    agentId={agentId}
+                    itemComponent={chatItem}
+                    translations={CHAT_TRANSLATIONS}
+                    classNames={CHAT_CLASSNAMES}
+                    toggleButtonComponent={({ open, onClick }) => (
+                      <AskAiButton slot={askAiSlot} open={open} onClick={onClick} />
+                    )}
+                  />
+                </AskAiBoundary>
+              )}
             </InstantSearch>
           </div>
         )}

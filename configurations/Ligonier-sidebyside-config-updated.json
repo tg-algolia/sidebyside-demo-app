@@ -11,7 +11,8 @@
     "apiKey": "403e30a66506d9bb34c3520c9ecaace2",
     "indexName": "new_ligonier_org_master",
     "title": "Neural Search",
-    "searchMode": "neural"
+    "searchMode": "neural",
+    "agentId": "5cb89149-7d9a-4934-ad4b-dc593621d645"
   },
   "showRetrievalBadge": true,
   "attributes": {

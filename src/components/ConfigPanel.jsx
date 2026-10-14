@@ -386,6 +386,16 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                 </Field>
               </>
             )}
+            <Field label="Ask AI — Agent ID (optional)">
+              <input
+                type="text"
+                value={local.index2.agentId || ''}
+                onChange={(e) => updateIndex('index2', 'agentId', e.target.value.trim())}
+                placeholder="Algolia Agent Studio agent ID"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </Field>
           </div>
         </section>
 

@@ -1492,3 +1492,68 @@ mark {
 @media (max-width: 400px) {
   .hits-list { grid-template-columns: 1fr; }
 }
+
+/* Ask AI (Agent Studio chat) */
+.ask-ai-slot {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .ask-ai-slot {
+    position: static;
+    transform: none;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .ask-ai-btn { margin-left: 0; }
+}
+
+.ask-ai-slot:empty {
+  display: none;
+}
+
+.ask-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+  padding: 7px 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--r-full);
+  background: linear-gradient(135deg, #003DFF, #7857FF);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.12s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.ask-ai-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.ask-ai-btn--open {
+  opacity: 0.85;
+}
+
+.ask-ai-btn--error {
+  background: var(--algolia-border);
+  color: var(--algolia-text-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.ask-ai-btn--error:hover {
+  transform: none;
+  box-shadow: none;
+}

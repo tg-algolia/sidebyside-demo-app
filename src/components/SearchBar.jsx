@@ -1,4 +1,4 @@
-export default function SearchBar({ query, onChange, onClear }) {
+export default function SearchBar({ query, onChange, onClear, askAiSlotRef }) {
   return (
     <div className="search-bar-container">
       <div className="search-bar-inner">
@@ -34,6 +34,9 @@ export default function SearchBar({ query, onChange, onClear }) {
             </svg>
           </button>
         )}
+
+        {/* Chat toggle ("Ask AI") is portaled in here when an agent is configured */}
+        <div className="ask-ai-slot" ref={askAiSlotRef} />
       </div>
     </div>
   );
