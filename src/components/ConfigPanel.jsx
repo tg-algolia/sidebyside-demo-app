@@ -396,7 +396,7 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
             Hit Card Attributes
           </h3>
           <p className="config-hint">
-            Enter the exact attribute names from your Algolia index records.
+            Enter the exact attribute names from your Algolia index records. For mixed record types, list several separated by commas — the first one with a value is used.
           </p>
           <div className="config-fields">
             <Field label="Image Attribute">
@@ -404,7 +404,7 @@ export default function ConfigPanel({ isOpen, onClose, config, defaultConfig, on
                 type="text"
                 value={local.attributes.imageAttr}
                 onChange={(e) => updateAttr('imageAttr', e.target.value)}
-                placeholder="e.g. image_url, thumbnail"
+                placeholder="e.g. image_url, fields.headerImage.fields.file.url"
               />
             </Field>
             <Field label="Image URL Prefix (optional)">

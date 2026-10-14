@@ -17,6 +17,23 @@ function getNested(obj, path) {
   );
 }
 
+const isEmpty = (v) => v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0);
+
+/**
+ * Comma-separated attribute list: returns the first attribute that has a
+ * value on the record, so mixed-type indices can specify per-type fields
+ * (e.g. "image.originalSrc, fields.headerImage.fields.file.url").
+ * Array items can be addressed by index ("fields.mainTeachers.0.fields.image...").
+ */
+function resolveAttr(obj, spec) {
+  if (!spec) return { value: undefined, attr: undefined };
+  for (const attr of spec.split(',').map((a) => a.trim()).filter(Boolean)) {
+    const value = getNested(obj, attr);
+    if (!isEmpty(value)) return { value, attr };
+  }
+  return { value: undefined, attr: undefined };
+}
+
 /**
  * Reads _rankingInfo.signals (kwPos / vecPos), falling back to the legacy
  * semanticScore and matchedWords fields, to determine
@@ -114,19 +131,22 @@ function RankingInfoButton({ rankingInfo }) {
 export default function HitCard({ hit, attributes, showRetrievalBadge, showRankingInfo, isSelected, onClick }) {
   const { imageAttr, imagePrefix, imageSuffix, nameAttr, attr1Name, attr1Label, attr2Name, attr2Label } = attributes;
 
-  const rawImageUrl = imageAttr ? getNested(hit, imageAttr) : null;
-  const imageUrl = rawImageUrl ? `${imagePrefix || ''}${rawImageUrl}${imageSuffix || ''}` : null;
-  const attr1Value = attr1Name ? getNested(hit, attr1Name) : undefined;
-  const attr2Value = attr2Name ? getNested(hit, attr2Name) : undefined;
+  const rawImageUrl = resolveAttr(hit, imageAttr).value;
+  // Contentful-style URLs are protocol-relative ("//images.ctfassets.net/...")
+  const imageUrl = typeof rawImageUrl === 'string' && rawImageUrl
+    ? `${imagePrefix || ''}${rawImageUrl.startsWith('//') ? `https:${rawImageUrl}` : rawImageUrl}${imageSuffix || ''}`
+    : null;
+  const attr1Value = resolveAttr(hit, attr1Name).value;
+  const attr2Value = resolveAttr(hit, attr2Name).value;
 
-  // Check if highlight data exists for name attribute to avoid errors.
-  // _highlightResult mirrors the record shape, so nested paths must be walked too.
+  // Highlight data mirrors the record shape, so nested paths must be walked too.
+  const { value: nameValue, attr: resolvedNameAttr } = resolveAttr(hit, nameAttr);
   const hasHighlight =
-    nameAttr &&
+    resolvedNameAttr &&
     hit._highlightResult &&
-    getNested(hit._highlightResult, nameAttr) !== undefined;
+    getNested(hit._highlightResult, resolvedNameAttr) !== undefined;
 
-  const displayName = nameAttr ? (getNested(hit, nameAttr) || '—') : '—';
+  const displayName = nameValue ? String(nameValue) : '—';
 
   return (
     <article
@@ -160,7 +180,7 @@ export default function HitCard({ hit, attributes, showRetrievalBadge, showRanki
       <div className="hit-body">
         <h3 className="hit-name" title={displayName}>
           {hasHighlight ? (
-            <Highlight attribute={nameAttr} hit={hit} />
+            <Highlight attribute={resolvedNameAttr} hit={hit} />
           ) : (
             displayName
           )}
