@@ -1,7 +1,7 @@
 import { Component, useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import algoliasearch from 'algoliasearch/lite';
 import { createPortal } from 'react-dom';
-import { InstantSearch, Configure, Chat } from 'react-instantsearch';
+import { InstantSearch, Configure, Chat, createDefaultTools, SearchIndexToolType } from 'react-instantsearch';
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
 import OptionalFilters from './components/OptionalFilters';
@@ -245,6 +245,14 @@ export default function App() {
     [config.attributes]
   );
 
+  // Agent Studio names its search tools per index ("algolia_search_index_<indexName>"),
+  // but the Chat widget only ships a renderer for the generic "algolia_search_index".
+  const chatTools = useMemo(() => {
+    const searchTool = createDefaultTools(chatItem)[SearchIndexToolType];
+    const names = [config.index1.indexName, config.index2.indexName].filter(Boolean);
+    return Object.fromEntries(names.map((name) => [`${SearchIndexToolType}_${name}`, searchTool]));
+  }, [chatItem, config.index1.indexName, config.index2.indexName]);
+
   const isConfigured = config.syncColumns
     ? config.syncIndex
       ? config.index1.appId && config.index1.apiKey && config.index1.indexName
@@ -356,6 +364,7 @@ export default function App() {
                   <Chat
                     agentId={agentId}
                     itemComponent={chatItem}
+                    tools={chatTools}
                     translations={CHAT_TRANSLATIONS}
                     classNames={CHAT_CLASSNAMES}
                     toggleButtonComponent={({ open, onClick }) => (
