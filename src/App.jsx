@@ -354,6 +354,34 @@ export default function App() {
   ]);
 
   const agentId = config.index2.agentId?.trim();
+
+  // A trailing "?" hands the query to the agent instead of (only) searching.
+  const isQuestion = !!agentId && /\S\s*\?+\s*$/.test(debouncedQuery) && debouncedQuery.trim().length > 1;
+  const searchQuery = agentId ? debouncedQuery.replace(/\s*\?+\s*$/, '') : debouncedQuery;
+  const lastAskedRef = useRef(null);
+  useEffect(() => {
+    if (!isQuestion) { lastAskedRef.current = null; return undefined; }
+    const text = debouncedQuery.trim();
+    if (lastAskedRef.current === text) return undefined;
+    lastAskedRef.current = text;
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries += 1;
+      const container = document.querySelector('.ais-Chat-container');
+      const textarea = container?.querySelector('.ais-ChatPrompt-textarea');
+      if (container && !container.classList.contains('ais-Chat-container--open')) {
+        document.querySelector('.ask-ai-btn')?.click();
+      } else if (textarea && !textarea.disabled) {
+        clearInterval(timer);
+        const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+        setter.call(textarea, text);
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        setTimeout(() => textarea.closest('form')?.requestSubmit(), 50);
+      }
+      if (tries > 40) clearInterval(timer);
+    }, 100);
+    return () => clearInterval(timer);
+  }, [isQuestion, debouncedQuery]);
   const chatItem = useCallback(
     ({ item }) => <HitCard hit={item} attributes={config.attributes} />,
     [config.attributes]
@@ -408,6 +436,7 @@ export default function App() {
           onChange={setQuery}
           onClear={() => setQuery('')}
           askAiSlotRef={setAskAiSlot}
+          showAskAiHint={!!agentId}
         />
 
         <OptionalFilters
@@ -442,7 +471,7 @@ export default function App() {
               indexName={config.index1.indexName}
               future={{ preserveSharedStateOnUnmount: true }}
             >
-              <SyncSearchBox query={debouncedQuery} />
+              <SyncSearchBox query={searchQuery} />
               <Configure
                 hitsPerPage={9}
                 getRankingInfo={true}
@@ -471,7 +500,7 @@ export default function App() {
               indexName={config.syncColumns && config.syncIndex ? config.index1.indexName : config.index2.indexName}
               future={{ preserveSharedStateOnUnmount: true }}
             >
-              <SyncSearchBox query={debouncedQuery} />
+              <SyncSearchBox query={searchQuery} />
               <Configure
                 hitsPerPage={9}
                 getRankingInfo={true}

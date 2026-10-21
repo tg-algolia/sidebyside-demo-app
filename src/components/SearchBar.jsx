@@ -1,4 +1,4 @@
-export default function SearchBar({ query, onChange, onClear, askAiSlotRef }) {
+export default function SearchBar({ query, onChange, onClear, askAiSlotRef, showAskAiHint }) {
   return (
     <div className="search-bar-container">
       <div className="search-bar-inner">
@@ -38,6 +38,13 @@ export default function SearchBar({ query, onChange, onClear, askAiSlotRef }) {
         {/* Chat toggle ("Ask AI") is portaled in here when an agent is configured */}
         <div className="ask-ai-slot" ref={askAiSlotRef} />
       </div>
+
+      {showAskAiHint && (
+        <p className="ask-ai-hint">
+          <span className="ask-ai-hint-icon" aria-hidden="true">✦</span>
+          End your search with a <kbd>?</kbd> to ask the AI agent a question
+        </p>
+      )}
     </div>
   );
 }
