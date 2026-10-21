@@ -364,21 +364,41 @@ export default function App() {
     const text = debouncedQuery.trim();
     if (lastAskedRef.current === text) return undefined;
     lastAskedRef.current = text;
+    // Always start from a fresh chat: open, stop any in-flight reply, clear, then send.
     let tries = 0;
+    let clearingSince = null;
     const timer = setInterval(() => {
       tries += 1;
+      if (tries > 100) { clearInterval(timer); return; }
       const container = document.querySelector('.ais-Chat-container');
-      const textarea = container?.querySelector('.ais-ChatPrompt-textarea');
-      if (container && !container.classList.contains('ais-Chat-container--open')) {
+      if (!container) return;
+      if (!container.classList.contains('ais-Chat-container--open')) {
         document.querySelector('.ask-ai-btn')?.click();
-      } else if (textarea && !textarea.disabled) {
-        clearInterval(timer);
-        const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
-        setter.call(textarea, text);
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        setTimeout(() => textarea.closest('form')?.requestSubmit(), 50);
+        return;
       }
-      if (tries > 40) clearInterval(timer);
+      const textarea = container.querySelector('.ais-ChatPrompt-textarea');
+      const submit = container.querySelector('.ais-ChatPrompt-submit');
+      const clearBtn = container.querySelector('.ais-ChatHeader-clear');
+      if (!textarea) return;
+      const busy = ['submitted', 'streaming'].includes(submit?.dataset.status);
+      if (busy) { textarea.closest('form')?.requestSubmit(); return; }
+      const stillClearing = !!container.querySelector('.ais-ChatMessages-content--clearing');
+      if (stillClearing || (clearBtn && !clearBtn.disabled)) {
+        if (clearingSince === null) { clearingSince = tries; clearBtn?.click(); return; }
+        // The library clears on a CSS transitionend; nudge it if none fires.
+        if (tries - clearingSince >= 8) {
+          container.querySelector('.ais-ChatMessages-content')?.dispatchEvent(
+            new TransitionEvent('transitionend', { propertyName: 'opacity' })
+          );
+        }
+        return;
+      }
+      if (textarea.disabled) return;
+      clearInterval(timer);
+      const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(textarea, text);
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      setTimeout(() => textarea.closest('form')?.requestSubmit(), 50);
     }, 100);
     return () => clearInterval(timer);
   }, [isQuestion, debouncedQuery]);
