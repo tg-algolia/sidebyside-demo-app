@@ -110,6 +110,78 @@ function AgentMessageActions({ actions = [], message }) {
   ));
 }
 const CHAT_CLASSNAMES = { root: 'ais-ChatOverlayLayout' };
+const CHAT_SIZE_KEY = 'askAiSize';
+const CHAT_MIN = { w: 320, h: 360 };
+
+// Drag handle on the panel's top-left corner (the panel is anchored bottom-right).
+// Size persists in localStorage; double-click the handle to reset.
+function AskAiResizer() {
+  const [container, setContainer] = useState(null);
+
+  useEffect(() => {
+    const root = document.querySelector('.ais-ChatOverlayLayout');
+    if (!root) return undefined;
+    setContainer(root.querySelector('.ais-Chat-container'));
+    const apply = (size) => {
+      if (size) {
+        root.style.setProperty('--ais-chat-width', `${size.w}px`);
+        root.style.setProperty('--ais-chat-height', `${size.h}px`);
+      } else {
+        root.style.removeProperty('--ais-chat-width');
+        root.style.removeProperty('--ais-chat-height');
+      }
+    };
+    try { apply(JSON.parse(localStorage.getItem(CHAT_SIZE_KEY))); } catch { /* ignore */ }
+    root.__applyChatSize = apply;
+    return () => { delete root.__applyChatSize; };
+  }, []);
+
+  const onPointerDown = (e) => {
+    const root = document.querySelector('.ais-ChatOverlayLayout');
+    if (!root) return;
+    e.preventDefault();
+    const rect = root.getBoundingClientRect();
+    const start = { x: e.clientX, y: e.clientY, w: rect.width, h: rect.height };
+    let size = { w: rect.width, h: rect.height };
+    const prevTransition = root.style.transition;
+    root.style.transition = 'none';
+    document.body.style.userSelect = 'none';
+    const move = (ev) => {
+      size = {
+        w: Math.round(Math.max(CHAT_MIN.w, start.w + (start.x - ev.clientX))),
+        h: Math.round(Math.max(CHAT_MIN.h, start.h + (start.y - ev.clientY))),
+      };
+      root.__applyChatSize?.(size);
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      root.style.transition = prevTransition;
+      document.body.style.userSelect = '';
+      try { localStorage.setItem(CHAT_SIZE_KEY, JSON.stringify(size)); } catch { /* ignore */ }
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  const reset = () => {
+    document.querySelector('.ais-ChatOverlayLayout')?.__applyChatSize?.(null);
+    try { localStorage.removeItem(CHAT_SIZE_KEY); } catch { /* ignore */ }
+  };
+
+  if (!container) return null;
+  return createPortal(
+    <div
+      className="ask-ai-resize"
+      role="separator"
+      aria-label="Resize Ask AI (double-click to reset)"
+      title="Drag to resize · double-click to reset"
+      onPointerDown={onPointerDown}
+      onDoubleClick={reset}
+    />,
+    container
+  );
+}
 
 // Keeps an unpublished/misconfigured agent from taking down the whole page.
 class AskAiBoundary extends Component {
@@ -435,6 +507,7 @@ export default function App() {
                       <AskAiButton slot={askAiSlot} open={open} onClick={onClick} />
                     )}
                   />
+                  <AskAiResizer />
                 </AskAiBoundary>
               )}
             </InstantSearch>

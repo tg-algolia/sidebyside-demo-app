@@ -1656,3 +1656,21 @@ mark {
   color: var(--algolia-blue);
   opacity: 1;
 }
+
+/* Ask AI panel resize handle (top-left corner) */
+.ask-ai-resize {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  cursor: nwse-resize;
+  z-index: 5;
+  touch-action: none;
+  border-top-left-radius: 10px;
+  background:
+    linear-gradient(135deg, transparent 0 40%, #b7bccb 40% 48%, transparent 48% 60%, #b7bccb 60% 68%, transparent 68%) 3px 3px / 12px 12px no-repeat;
+  opacity: 0.7;
+}
+.ask-ai-resize:hover { opacity: 1; }
+@media (max-width: 680px) { .ask-ai-resize { display: none; } }
